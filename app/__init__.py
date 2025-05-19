@@ -6,6 +6,7 @@ from .routes.user_routes import user_bp
 
 # ⚠️ Importar los modelos explícitamente para que se registren en SQLAlchemy
 # 1 No depende De Nadie
+from .models.rol import  Rol
 from .models.user import User
 from .models.profesor import Profesor
 from .models.materia import Materia

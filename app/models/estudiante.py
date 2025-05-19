@@ -9,3 +9,6 @@ class Estudiante(db.Model):
     apellido = db.Column(db.String(255), nullable=False)
     sexo = db.Column(db.String(10), nullable=False)
     telefono = db.Column(db.Integer, nullable=True)
+
+    users_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    users_estudiante = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)

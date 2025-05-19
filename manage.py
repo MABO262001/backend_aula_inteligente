@@ -42,10 +42,13 @@ def init_db():
 
     print(f"📦 Tablas actuales: {new_tables}")
 
+
+
+
 # 🌱 Comando para poblar la base con datos de prueba
 @app.cli.command("seed-db")
 @with_appcontext
 def seed_db():
-    """Inserta datos de prueba (seeders)."""
-    from app.seeders.user_seeder import seed_users
-    seed_users()
+    """Inserta todos los datos de prueba."""
+    from app.seeders.main_seeder import run_all_seeders
+    run_all_seeders()

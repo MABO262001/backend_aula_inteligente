@@ -8,3 +8,5 @@ class Matricula(db.Model):
     monto = db.Column(db.Float, nullable=False)
     parentesco_id = db.Column(db.Integer, db.ForeignKey("parentesco.id"), nullable=False)
     subgestion_id = db.Column(db.Integer, db.ForeignKey("subgestion.id"), nullable=False)
+
+    users_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)

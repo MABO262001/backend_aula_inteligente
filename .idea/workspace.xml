@@ -5,29 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="85bee736-e50b-43ad-8081-f86b1119e6ce" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/backend_mockup_ai.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/extensions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/models/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/models/user.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/routes/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/routes/user_routes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/user_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/uploads/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/manage.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/migrations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/rol.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/main_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/rol_seeder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/apoderado.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/apoderado.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/boleta_inscripcion.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/boleta_inscripcion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/estudiante.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/estudiante.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/matricula.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/matricula.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/profesor.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/profesor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/seeders/user_seeder.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/seeders/user_seeder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iniciar-backend.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/iniciar-backend.ps1" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manage.py" beforeDir="false" afterPath="$PROJECT_DIR$/manage.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,6 +35,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;MABO262001&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/MABO262001/backend_aula_inteligente.git&quot;,
+    &quot;accountId&quot;: &quot;cceb6fab-8b63-495a-88d9-b0644177d9b3&quot;
+  }
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
 }</component>
@@ -57,8 +60,10 @@
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Proyectos/Sistemas De Informacion 2/2do Parcial/backend_aula_inteligente&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -90,6 +95,9 @@
       <workItem from="1747349019066" duration="1096000" />
       <workItem from="1747394879536" duration="7247000" />
       <workItem from="1747495456796" duration="150000" />
+      <workItem from="1747662406729" duration="1806000" />
+      <workItem from="1747688415544" duration="1364000" />
+      <workItem from="1747690900054" duration="1808000" />
     </task>
     <servers />
   </component>

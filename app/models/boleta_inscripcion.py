@@ -8,3 +8,5 @@ class BoletaInscripcion(db.Model):
     fecha = db.Column(db.Date, nullable=False)
     estudiante_id = db.Column(db.Integer, db.ForeignKey("estudiante.id"), nullable=False)
     gestion_curso_paralelo_id = db.Column(db.Integer, db.ForeignKey("gestion_curso_paralelo.id"), nullable=False)
+
+    users_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)

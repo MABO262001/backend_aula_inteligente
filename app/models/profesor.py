@@ -9,3 +9,6 @@ class Profesor(db.Model):
     apellido = db.Column(db.String(255), nullable=False)
     telefono = db.Column(db.Integer, nullable=True)
     direccion = db.Column(db.String(255), nullable=False)
+
+    users_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    users_profesor = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
