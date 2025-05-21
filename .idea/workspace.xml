@@ -5,20 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="85bee736-e50b-43ad-8081-f86b1119e6ce" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/models/rol.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/main_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/rol_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/routes/auth_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/apoderado.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/apoderado.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/boleta_inscripcion.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/boleta_inscripcion.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/estudiante.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/estudiante.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/matricula.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/matricula.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/profesor.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/profesor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/user.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/seeders/user_seeder.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/seeders/user_seeder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iniciar-backend.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/iniciar-backend.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manage.py" beforeDir="false" afterPath="$PROJECT_DIR$/manage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/extensions.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/extensions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,7 +91,10 @@
       <workItem from="1747495456796" duration="150000" />
       <workItem from="1747662406729" duration="1806000" />
       <workItem from="1747688415544" duration="1364000" />
-      <workItem from="1747690900054" duration="1808000" />
+      <workItem from="1747690900054" duration="3028000" />
+      <workItem from="1747701755016" duration="27000" />
+      <workItem from="1747769495714" duration="2306000" />
+      <workItem from="1747828121104" duration="2242000" />
     </task>
     <servers />
   </component>

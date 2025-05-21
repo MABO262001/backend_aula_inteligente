@@ -1,8 +1,9 @@
 # app/__init__.py
 from flask import Flask
 from .config import Config
-from .extensions import db, migrate
+from .extensions import db, migrate, jwt
 from .routes.user_routes import user_bp
+from .routes.auth_routes import auth_bp
 
 # ⚠️ Importar los modelos explícitamente para que se registren en SQLAlchemy
 # 1 No depende De Nadie
@@ -50,7 +51,9 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
+    jwt.init_app(app)
 
     app.register_blueprint(user_bp, url_prefix='/api/users')
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
     return app

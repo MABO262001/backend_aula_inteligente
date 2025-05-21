@@ -16,3 +16,7 @@ class Config:
     UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "/app/uploads")
     BASE_URL = os.getenv("BASE_URL", "http://localhost:5000")
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10 MB
+
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "super_secret_key")
+    JWT_TOKEN_LOCATION = ["headers"]
+    JWT_ACCESS_TOKEN_EXPIRES = False  # o timedelta(minutes=30) para que expire
