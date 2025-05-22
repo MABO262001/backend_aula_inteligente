@@ -2,7 +2,6 @@
 from app.models.gestion import Gestion
 from app.extensions import db
 
-# Variables para definir el rango de años por defecto
 DEFAULT_DESDE = 2020
 DEFAULT_HASTA = 2025
 

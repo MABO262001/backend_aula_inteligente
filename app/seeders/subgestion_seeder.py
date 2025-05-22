@@ -14,7 +14,6 @@ def seed_subgestiones():
         for gestion in gestiones:
             anio = int(gestion.nombre)
 
-            # Dividir en trimestres
             if anio % 2 == 0:
                 subgestiones.append(Subgestion(
                     nombre="1er Trimestre",
@@ -34,7 +33,7 @@ def seed_subgestiones():
                     fecha_final=date(anio, 9, 30),
                     gestion_id=gestion.id
                 ))
-            else:  # Ejemplo: años impares -> semestres
+            else:
                 subgestiones.append(Subgestion(
                     nombre="1er Semestre",
                     fecha_inicio=date(anio, 1, 1),

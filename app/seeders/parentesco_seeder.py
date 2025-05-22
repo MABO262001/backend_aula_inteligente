@@ -16,7 +16,6 @@ def seed_parentescos():
         print("❌ Faltan apoderados o estudiantes para crear parentescos.")
         return
 
-    # Lista de nombres posibles de parentesco
     nombres_parentesco = [
         "Madre", "Padre", "Abuelo", "Abuela",
         "Tio", "Tia", "Primo", "Hermano",

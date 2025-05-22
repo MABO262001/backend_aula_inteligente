@@ -8,7 +8,7 @@ def seed_horarios():
     if not Horario.query.first():
         horarios = []
 
-        # Generar horarios de lapso corto
+        # horarios de lapso corto
         hora_actual_corto = time(7, 0)
         lapso_corto = timedelta(hours=1, minutes=30)
         while hora_actual_corto < time(22, 30):
@@ -18,7 +18,7 @@ def seed_horarios():
             horarios.append(Horario(hora_inicio=hora_actual_corto, hora_final=hora_final_corto))
             hora_actual_corto = hora_final_corto
 
-        # Generar horarios de lapso largo
+        # horarios de lapso largo
         hora_actual_largo = time(7, 0)
         lapso_largo = timedelta(hours=2, minutes=15)
         while hora_actual_largo < time(22, 30):

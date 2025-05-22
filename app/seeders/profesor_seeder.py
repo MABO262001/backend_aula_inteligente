@@ -24,7 +24,6 @@ def seed_profesores():
     profesores = []
     existing_cis = set()
 
-    # Obtener administradores y profesores usuarios
     admin_usuarios = User.query.filter_by(rol_id=1).all()
     profesor_usuarios = User.query.filter_by(rol_id=2).all()
 

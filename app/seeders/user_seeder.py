@@ -22,11 +22,9 @@ def seed_users():
         existing_emails = set()
         user_counter = 1
 
-        # Cargar nombres y apellidos desde el archivo JSON
         with open('fakerApi.json', 'r', encoding='utf-8') as file:
             names_data = json.load(file)
 
-        # Usuarios predefinidos
         predefined_users = [
             {
                 "name": "Miguel Angel Ballivian Ocampo",

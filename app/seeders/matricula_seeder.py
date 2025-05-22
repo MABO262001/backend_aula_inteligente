@@ -24,7 +24,6 @@ def seed_matriculas():
         print("❌ No hay parentescos, subgestiones o gestiones para generar matrículas.")
         return
 
-    # Crear un dict para agrupar subgestiones por gestion_id para acceso rápido
     subgestiones_por_gestion = {}
     for sg in subgestiones:
         subgestiones_por_gestion.setdefault(sg.gestion_id, []).append(sg)
@@ -32,12 +31,12 @@ def seed_matriculas():
     matrículas = []
 
     for parentesco in parentescos:
-        # Elegir aleatoriamente 1 a 3 gestiones para simular ingreso del estudiante
+
         cantidad_gestiones = random.randint(1, min(3, len(gestiones)))
         gestiones_elegidas = random.sample(gestiones, cantidad_gestiones)
 
         for gestion in gestiones_elegidas:
-            # Obtener las subgestiones de esta gestion
+
             subgestiones_de_gestion = subgestiones_por_gestion.get(gestion.id, [])
 
             for subgestion in subgestiones_de_gestion:

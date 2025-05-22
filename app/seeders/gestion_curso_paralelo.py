@@ -9,7 +9,6 @@ def seed_gestion_curso_paralelo():
     if not GestionCursoParalelo.query.first():
         gestion_curso_paralelo = []
 
-        # Obtener todas las gestiones y cursos_paralelo
         gestiones = Gestion.query.all()
         cursos_paralelo = CursoParalelo.query.all()
 
