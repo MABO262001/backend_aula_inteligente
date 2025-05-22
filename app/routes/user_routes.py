@@ -16,7 +16,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def save_user_photo(file, user_name):
-    upload_folder = current_app.config['UPLOAD_FOLDER']
+    upload_folder = current_app.config.get('UPLOAD_FOLDER', 'uploads')
     model_folder = os.path.join(upload_folder, 'users')
     os.makedirs(model_folder, exist_ok=True)
 
@@ -26,14 +26,15 @@ def save_user_photo(file, user_name):
     filepath = os.path.join(model_folder, safe_name)
     file.save(filepath)
 
-    public_url = f"{current_app.config['BASE_URL']}/api/users/uploads/{safe_name}"
+    base_url = current_app.config.get('BASE_URL', '')
+    public_url = f"{base_url}/api/users/uploads/{safe_name}" if base_url else f"/api/users/uploads/{safe_name}"
+
     return filepath, public_url
 
 def validate_email_simple(email: str) -> bool:
     return email and '@' in email
 
 def to_int_if_str(value):
-    # Convierte a int si es cadena numérica, si ya es int devuelve igual, si no puede, devuelve None
     if isinstance(value, int):
         return value
     if isinstance(value, str) and value.isdigit():
@@ -83,7 +84,6 @@ def listar_usuarios():
     return jsonify(result)
 
 @user_bp.route('/guardar', methods=['POST'])
-@user_bp.route('/guardar', methods=['POST'])
 def guardar_usuario():
     try:
         data = request.form.to_dict()
@@ -91,35 +91,36 @@ def guardar_usuario():
         if errors:
             return jsonify({"errors": errors}), 400
 
+        name = data.get('name', '').strip()
+        email = data.get('email', '').strip()
+
+        # Verificar que name y email no estén repetidos
+        if User.query.filter_by(name=name).first():
+            return jsonify({"error": "El nombre de usuario ya está registrado"}), 409
+        if User.query.filter_by(email=email).first():
+            return jsonify({"error": "El email ya está registrado"}), 409
+
         rol_id = to_int_if_str(data.get('rol_id'))
         rol = Rol.query.get(rol_id)
         if not rol:
             return jsonify({"error": "rol_id inválido"}), 400
 
-        if User.query.filter_by(email=data['email']).first():
-            return jsonify({"error": "El email ya está registrado"}), 409
-
-        if User.query.filter_by(name=data['name']).first():
-            return jsonify({"error": "El nombre de usuario ya está registrado"}), 409
-
-        password_hashed = generate_password_hash(data['password'])
+        password = data.get('password')
+        password_hashed = generate_password_hash(password)
 
         photo_url = None
         photo_storage = None
-        file = request.files.get('photo')
 
+        file = request.files.get('photo')
         if file:
             if not allowed_file(file.filename):
                 return jsonify({"error": "Formato de imagen no permitido"}), 400
-
-            # Guarda la foto y obtén rutas
-            photo_storage, photo_url = save_user_photo(file, data['name'])
-            # Confirmar que la foto se guardó
+            photo_storage, photo_url = save_user_photo(file, name)
             current_app.logger.info(f"Foto guardada en: {photo_storage}")
 
         user = User(
-            name=data['name'].strip(),
-            email=data['email'].strip(),
+            name=name,
+            email=email,
             password=password_hashed,
             photo_url=photo_url,
             photo_storage=photo_storage,
@@ -129,7 +130,21 @@ def guardar_usuario():
         db.session.add(user)
         db.session.commit()
 
-        return jsonify({"message": "Usuario creado exitosamente", "user_id": user.id}), 201
+        return jsonify({
+            "message": "Usuario creado exitosamente",
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "photo_url": user.photo_url,
+                "photo_storage": user.photo_storage,
+                "status": user.status,
+                "rol": {
+                    "id": rol.id,
+                    "nombre": rol.nombre
+                }
+            }
+        }), 201
 
     except IntegrityError:
         db.session.rollback()
@@ -137,7 +152,6 @@ def guardar_usuario():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
-
 
 
 @user_bp.route('/buscar', methods=['GET'])
@@ -246,5 +260,5 @@ def eliminar_usuario(user_id):
 
 @user_bp.route('/uploads/<filename>', methods=['GET'])
 def servir_foto_usuario(filename):
-    folder = os.path.join(current_app.config['UPLOAD_FOLDER'], 'users')
+    folder = os.path.join(current_app.config.get('UPLOAD_FOLDER', 'uploads'), 'users')
     return send_from_directory(folder, filename)
