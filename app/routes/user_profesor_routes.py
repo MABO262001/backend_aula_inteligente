@@ -276,6 +276,7 @@ def buscar_profesores():
     query_params = request.args
     query = Profesor.query
 
+    # Filtros para Profesor
     if 'id' in query_params and query_params.get('id').isdigit():
         query = query.filter(Profesor.id == int(query_params.get('id')))
     if 'ci' in query_params and query_params.get('ci').isdigit():
@@ -284,10 +285,20 @@ def buscar_profesores():
         query = query.filter(Profesor.nombre.ilike(f"%{query_params.get('nombre')}%"))
     if 'apellido' in query_params:
         query = query.filter(Profesor.apellido.ilike(f"%{query_params.get('apellido')}%"))
+    if 'telefono' in query_params and query_params.get('telefono').isdigit():
+        query = query.filter(Profesor.telefono == int(query_params.get('telefono')))
+    if 'direccion' in query_params:
+        query = query.filter(Profesor.direccion.ilike(f"%{query_params.get('direccion')}%"))
     if 'users_profesor_id' in query_params and query_params.get('users_profesor_id').isdigit():
         query = query.filter(Profesor.users_profesor_id == int(query_params.get('users_profesor_id')))
     if 'users_id' in query_params and query_params.get('users_id').isdigit():
         query = query.filter(Profesor.users_id == int(query_params.get('users_id')))
+
+    # Filtros para User
+    if 'name' in query_params:
+        query = query.join(User, User.id == Profesor.users_profesor_id).filter(User.name.ilike(f"%{query_params.get('name')}%"))
+    if 'email' in query_params:
+        query = query.join(User, User.id == Profesor.users_profesor_id).filter(User.email.ilike(f"%{query_params.get('email')}%"))
 
     profesores = query.all()
     result = []
@@ -314,8 +325,7 @@ def buscar_profesores():
                     "nombre": rol.nombre if rol else None
                 } if rol else None
             }
-        }
-        )
+        })
     return jsonify(result)
 
 
