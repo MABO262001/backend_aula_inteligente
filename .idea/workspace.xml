@@ -5,30 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="85bee736-e50b-43ad-8081-f86b1119e6ce" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/seeders/apoderado_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/curso_paralelo.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/curso_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/dia_horario_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/dia_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/estudiante_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/gestion_curso_paralelo.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/gestion_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/hora_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/materia_profesor.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/materia_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/matricula_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/paralelo_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/parentesco_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/profesor_seeder.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/seeders/subgestion_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/materia_profesor_dia_horario_seeder.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/apoderado.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/apoderado.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/estudiante.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/estudiante.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/profesor.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/profesor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/subgestion.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/subgestion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/seeders/hora_seeder.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/seeders/horario_seeder.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/seeders/main_seeder.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/seeders/main_seeder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/seeders/user_seeder.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/seeders/user_seeder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/seeders/materia_profesor.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/seeders/materia_profesor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -140,11 +121,22 @@
       <workItem from="1747701755016" duration="27000" />
       <workItem from="1747769495714" duration="2306000" />
       <workItem from="1747828121104" duration="8223000" />
-      <workItem from="1747855645701" duration="16613000" />
+      <workItem from="1747855645701" duration="18083000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/app/seeders/horario_seeder.py</url>
+          <line>22</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

@@ -1,6 +1,6 @@
 from app.seeders.user_seeder import seed_users
 from app.seeders.rol_seeder import seed_roles
-from app.seeders.hora_seeder import seed_horarios
+from app.seeders.horario_seeder import seed_horarios
 from app.seeders.dia_seeder import seed_dias
 from app.seeders.dia_horario_seeder import seed_dia_horarios
 from app.seeders.materia_seeder import seed_materias
@@ -15,6 +15,8 @@ from app.seeders.apoderado_seeder import seed_apoderados
 from app.seeders.estudiante_seeder import seed_estudiantes
 from app.seeders.parentesco_seeder import seed_parentescos
 from app.seeders.matricula_seeder import seed_matriculas
+from app.seeders.materia_profesor import seed_materia_profesor
+from app.seeders.materia_profesor_dia_horario_seeder import seed_materia_profesor_dia_horario
 
 
 def run_all_seeders():
@@ -35,3 +37,5 @@ def run_all_seeders():
     seed_estudiantes()
     seed_parentescos()
     seed_matriculas()
+    seed_materia_profesor()
+    seed_materia_profesor_dia_horario()

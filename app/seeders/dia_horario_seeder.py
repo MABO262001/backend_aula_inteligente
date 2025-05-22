@@ -25,7 +25,6 @@ def seed_dia_horarios():
                 for horario in horarios_cortos:
                     dia_horarios.append(DiaHorario(dia_id=dia.id, horario_id=horario.id))
 
-        # horarios largos
         dias_largos = ["Martes", "Jueves"]
         horarios_largos = horarios[len(horarios)//2:]
 

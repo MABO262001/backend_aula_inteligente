@@ -1,4 +1,4 @@
-# app/seeders/hora_seeder.py
+# app/seeders/horario_seeder.py
 
 from app.models.horario import Horario
 from app.extensions import db
