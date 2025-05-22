@@ -59,9 +59,10 @@ def validate_user_data(data, is_update=False):
             errors.append("Si se envía contraseña, debe tener al menos 6 caracteres.")
     if not is_update or 'rol_id' in data:
         rol_id_raw = data.get('rol_id')
-        rol_id = to_int_if_str(rol_id_raw)
-        if rol_id is None:
-            errors.append("El campo 'rol_id' es obligatorio y debe ser numérico.")
+        if rol_id_raw is not None:
+            rol_id = to_int_if_str(rol_id_raw)
+            if rol_id is None:
+                errors.append("El campo 'rol_id' debe ser numérico si se envía.")
     return errors
 
 @user_bp.route('/listar', methods=['GET'])
@@ -100,10 +101,19 @@ def guardar_usuario():
         if User.query.filter_by(email=email).first():
             return jsonify({"error": "El email ya está registrado"}), 409
 
-        rol_id = to_int_if_str(data.get('rol_id'))
-        rol = Rol.query.get(rol_id)
-        if not rol:
-            return jsonify({"error": "rol_id inválido"}), 400
+        # Usar rol_id enviado o por defecto Administrador
+        rol_id_raw = data.get('rol_id')
+        if rol_id_raw is not None:
+            rol_id = to_int_if_str(rol_id_raw)
+            rol = Rol.query.get(rol_id)
+            if not rol:
+                return jsonify({"error": "rol_id inválido"}), 400
+        else:
+            # Buscar rol administrador por defecto
+            rol = Rol.query.filter_by(nombre="Administrador").first()
+            if not rol:
+                return jsonify({"error": "Rol 'Administrador' no encontrado"}), 500
+            rol_id = rol.id
 
         password = data.get('password')
         password_hashed = generate_password_hash(password)
@@ -222,12 +232,19 @@ def actualizar_usuario(user_id):
         if 'password' in data and data['password']:
             user.password = generate_password_hash(data['password'])
 
-        if 'rol_id' in data:
-            rol_id = to_int_if_str(data['rol_id'])
+        rol_id_raw = data.get('rol_id')
+        if rol_id_raw is not None:
+            rol_id = to_int_if_str(rol_id_raw)
             rol = Rol.query.get(rol_id)
             if not rol:
                 return jsonify({"error": "rol_id inválido"}), 400
             user.rol_id = rol_id
+        else:
+            # Si no envían rol_id, asignar Administrador por defecto
+            rol = Rol.query.filter_by(nombre="Administrador").first()
+            if not rol:
+                return jsonify({"error": "Rol 'Administrador' no encontrado"}), 500
+            user.rol_id = rol.id
 
         file = request.files.get('photo')
         if file:
