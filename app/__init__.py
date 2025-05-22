@@ -51,9 +51,15 @@ from .routes.dia_routes import dia_bp
 from .routes.horario_routes import horario_bp
 from .routes.materia_routes import materia_bp
 
+from flask_cors import CORS
+
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
+
 
     db.init_app(app)
     migrate.init_app(app, db)
