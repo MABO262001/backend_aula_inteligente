@@ -2,10 +2,7 @@
 from flask import Flask
 from .config import Config
 from .extensions import db, migrate, jwt
-from .routes.user_routes import user_bp
-from .routes.auth_routes import auth_bp
-from .routes.user_profesor_routes import profesor_bp
-from .routes.rol_routes import rol_bp
+
 
 # ⚠️ Importar los modelos explícitamente para que se registren en SQLAlchemy
 # 1 No depende De Nadie
@@ -46,6 +43,13 @@ from .models.participacion import Participacion
 from .models.estudiante_asistencia import EstudianteAsistencia
 from .models.estudiante_participa import EstudianteParticipa
 
+from .routes.user_routes import user_bp
+from .routes.auth_routes import auth_bp
+from .routes.user_profesor_routes import profesor_bp
+from .routes.rol_routes import rol_bp
+from .routes.dia_routes import dia_bp
+from .routes.horario_routes import horario_bp
+from .routes.materia_routes import materia_bp
 
 def create_app():
     app = Flask(__name__)
@@ -59,5 +63,8 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(rol_bp, url_prefix='/api/roles')
     app.register_blueprint(profesor_bp, url_prefix='/api/profesores')
+    app.register_blueprint(dia_bp, url_prefix='/api/dias')
+    app.register_blueprint(horario_bp, url_prefix='/api/horario')
+    app.register_blueprint(materia_bp, url_prefix='/api/materias')
 
     return app
