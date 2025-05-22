@@ -4,6 +4,8 @@ from .config import Config
 from .extensions import db, migrate, jwt
 from .routes.user_routes import user_bp
 from .routes.auth_routes import auth_bp
+from .routes.rol_routes import rol_bp
+
 
 # ⚠️ Importar los modelos explícitamente para que se registren en SQLAlchemy
 # 1 No depende De Nadie
@@ -55,5 +57,5 @@ def create_app():
 
     app.register_blueprint(user_bp, url_prefix='/api/users')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
-
+    app.register_blueprint(rol_bp, url_prefix='/api/roles')
     return app

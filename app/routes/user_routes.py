@@ -83,6 +83,7 @@ def listar_usuarios():
     return jsonify(result)
 
 @user_bp.route('/guardar', methods=['POST'])
+@user_bp.route('/guardar', methods=['POST'])
 def guardar_usuario():
     try:
         data = request.form.to_dict()
@@ -106,10 +107,15 @@ def guardar_usuario():
         photo_url = None
         photo_storage = None
         file = request.files.get('photo')
+
         if file:
             if not allowed_file(file.filename):
                 return jsonify({"error": "Formato de imagen no permitido"}), 400
+
+            # Guarda la foto y obtén rutas
             photo_storage, photo_url = save_user_photo(file, data['name'])
+            # Confirmar que la foto se guardó
+            current_app.logger.info(f"Foto guardada en: {photo_storage}")
 
         user = User(
             name=data['name'].strip(),
@@ -122,13 +128,17 @@ def guardar_usuario():
         )
         db.session.add(user)
         db.session.commit()
+
         return jsonify({"message": "Usuario creado exitosamente", "user_id": user.id}), 201
 
     except IntegrityError:
         db.session.rollback()
         return jsonify({"error": "Error de integridad en la base de datos"}), 409
     except Exception as e:
+        db.session.rollback()
         return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
+
+
 
 @user_bp.route('/buscar', methods=['GET'])
 def buscar_usuarios():
