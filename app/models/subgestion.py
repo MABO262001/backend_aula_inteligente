@@ -7,3 +7,5 @@ class Subgestion(db.Model):
     nombre = db.Column(db.String(255), nullable=False)
     fecha_inicio = db.Column(db.Date, nullable=False)
     fecha_final = db.Column(db.Date, nullable=False)
+
+    gestion_id = db.Column(db.Integer, db.ForeignKey("gestion.id"), nullable=False)

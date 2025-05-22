@@ -11,4 +11,4 @@ class Estudiante(db.Model):
     telefono = db.Column(db.Integer, nullable=True)
 
     users_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    users_estudiante = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    users_estudiante_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)

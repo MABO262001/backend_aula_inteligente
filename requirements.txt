@@ -7,3 +7,4 @@ mysqlclient
 sqlalchemy-utils
 werkzeug
 Flask-JWT-Extended
+Faker

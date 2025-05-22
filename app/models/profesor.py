@@ -11,4 +11,4 @@ class Profesor(db.Model):
     direccion = db.Column(db.String(255), nullable=False)
 
     users_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    users_profesor = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    users_profesor_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)

@@ -11,4 +11,4 @@ class Apoderado(db.Model):
     telefono = db.Column(db.Integer, nullable=True)
 
     users_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    users_apoderado = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    users_apoderado_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)

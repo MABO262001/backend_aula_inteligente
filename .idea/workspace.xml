@@ -5,9 +5,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="85bee736-e50b-43ad-8081-f86b1119e6ce" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/seeders/apoderado_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/curso_paralelo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/curso_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/dia_horario_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/dia_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/estudiante_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/gestion_curso_paralelo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/gestion_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/hora_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/materia_profesor.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/materia_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/matricula_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/paralelo_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/parentesco_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/profesor_seeder.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/seeders/subgestion_seeder.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/user.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/user_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/user_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/apoderado.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/apoderado.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/estudiante.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/estudiante.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/profesor.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/profesor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/subgestion.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/subgestion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/seeders/main_seeder.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/seeders/main_seeder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/seeders/user_seeder.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/seeders/user_seeder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,6 +40,17 @@
       <list>
         <option value="Python Script" />
       </list>
+    </option>
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform)); sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo, NoAppException&#10;for module in [&quot;main.py&quot;, &quot;wsgi.py&quot;, &quot;app.py&quot;]:&#10;    try: locals().update(ScriptInfo(app_import_path=module, create_app=None).load_app().make_shell_context()); print(&quot;\nFlask App: %s&quot; % app.import_name); break&#10;    except NoAppException: pass">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform)); sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo, NoAppException&#10;for module in [&quot;main.py&quot;, &quot;wsgi.py&quot;, &quot;app.py&quot;]:&#10;    try: locals().update(ScriptInfo(app_import_path=module, create_app=None).load_app().make_shell_context()); print(&quot;\nFlask App: %s&quot; % app.import_name); break&#10;    except NoAppException: pass" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
     </option>
   </component>
   <component name="Git.Settings">
@@ -44,27 +76,45 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Proyectos/Sistemas De Informacion 2/2do Parcial/backend_aula_inteligente&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "D:/Proyectos/Sistemas De Informacion 2/2do Parcial/backend_aula_inteligente",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "terminal",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\Proyectos\sw1\2do Parcial\backend_mockup_ai\app" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="ShConfigurationType">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="powershell.exe" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
+      <method v="2" />
+    </configuration>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -89,7 +139,8 @@
       <workItem from="1747690900054" duration="3028000" />
       <workItem from="1747701755016" duration="27000" />
       <workItem from="1747769495714" duration="2306000" />
-      <workItem from="1747828121104" duration="7416000" />
+      <workItem from="1747828121104" duration="8223000" />
+      <workItem from="1747855645701" duration="16613000" />
     </task>
     <servers />
   </component>
