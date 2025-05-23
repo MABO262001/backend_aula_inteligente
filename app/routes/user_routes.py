@@ -297,9 +297,6 @@ def listar_usuarios_administrador():
                 "email": user.email,
                 "photo_url": user.photo_url,
                 "status": user.status,
-                "rol": {
-                    "id": rol.id if rol else None,
-                    "nombre": rol.nombre if rol else None
-                }
+
             })
     return jsonify(result)
