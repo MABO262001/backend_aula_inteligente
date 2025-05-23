@@ -6,3 +6,4 @@ class Materia(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     sigla = db.Column(db.String(255), nullable=False)
     nombre = db.Column(db.String(255), nullable=False)
+

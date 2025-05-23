@@ -6,6 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="85bee736-e50b-43ad-8081-f86b1119e6ce" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/dia_horario.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/dia_horario.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/materia.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/materia.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/materia_profesor.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/materia_profesor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/materia_profesor_dia_horario.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/materia_profesor_dia_horario.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/profesor.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/profesor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/user_profesor_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/user_profesor_routes.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,12 +45,12 @@
     &quot;assignee&quot;: &quot;MABO262001&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/MABO262001/backend_aula_inteligente.git",
-    "accountId": "6d323782-c8aa-48ec-a56e-3a20f61e3f69"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/MABO262001/backend_aula_inteligente.git&quot;,
+    &quot;accountId&quot;: &quot;6d323782-c8aa-48ec-a56e-3a20f61e3f69&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
 }</component>
@@ -53,24 +59,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Proyectos/Sistemas De Informacion 2/2do Parcial/backend_aula_inteligente&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;terminal&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "D:/Proyectos/Sistemas De Informacion 2/2do Parcial/backend_aula_inteligente",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\Proyectos\sw1\2do Parcial\backend_mockup_ai\app" />
@@ -79,8 +85,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-PY-243.25659.43" />
-        <option value="bundled-python-sdk-181015f7ab06-4df51de95216-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.25659.43" />
+        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-PY-251.25410.122" />
+        <option value="bundled-python-sdk-880ecab49056-36ea0e71a18c-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.25410.122" />
       </set>
     </attachedChunks>
   </component>
@@ -103,6 +109,7 @@
       <workItem from="1747828121104" duration="8223000" />
       <workItem from="1747855645701" duration="28822000" />
       <workItem from="1747935798938" duration="2139000" />
+      <workItem from="1747950937265" duration="12087000" />
     </task>
     <servers />
   </component>

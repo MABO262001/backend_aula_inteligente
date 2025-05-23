@@ -1,3 +1,4 @@
+import json
 import os
 from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from werkzeug.utils import secure_filename
@@ -5,9 +6,16 @@ from werkzeug.security import generate_password_hash
 from sqlalchemy.exc import IntegrityError
 from ..models.user import User
 from ..models.rol import Rol
-from ..models.profesor import Profesor
 from ..extensions import db
 from datetime import datetime
+from ..models.dia import Dia
+from ..models.horario import Horario
+from ..models.profesor import Profesor
+from ..models.materia_profesor import MateriaProfesor
+from ..models.materia_profesor_dia_horario import MateriaProfesorDiaHorario
+from ..models.dia_horario import DiaHorario
+
+
 
 profesor_bp = Blueprint('profesor_bp', __name__)
 
@@ -17,10 +25,9 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
-def save_user_photo(file, user_name):
+def save_user_photo_by_role(file, user_name, role_name):
     upload_folder = current_app.config.get('UPLOAD_FOLDER', 'uploads')
-    model_folder = os.path.join(upload_folder, 'users')
+    model_folder = os.path.join(upload_folder, role_name.lower())
     os.makedirs(model_folder, exist_ok=True)
 
     ext = file.filename.rsplit('.', 1)[1].lower()
@@ -30,17 +37,73 @@ def save_user_photo(file, user_name):
     file.save(filepath)
 
     base_url = current_app.config.get('BASE_URL', '')
-    public_url = f"{base_url}/api/profesores/uploads/{safe_name}" if base_url else f"/api/profesores/uploads/{safe_name}"
+    # public_url = f"{base_url}/uploads/{role_name.lower()}/{safe_name}" \
+    #     if base_url else f"/uploads/{role_name.lower()}/{safe_name}"
+
+    public_url = f"{base_url}/api/profesores/uploads/{role_name.lower()}/{safe_name}" \
+        if base_url else f"/api/profesores/uploads/{role_name.lower()}/{safe_name}"
 
     return filepath, public_url
+
+
+@profesor_bp.route('/listar', methods=['GET'])
+def listar_profesores():
+    profesores = Profesor.query.all()
+    resultado = []
+
+    for profesor in profesores:
+        user = User.query.get(profesor.users_profesor_id)
+
+        materias = []
+        for mp in profesor.materias_profesor:  # Relación directa
+            materia = mp.materia
+            dias_horarios = []
+
+            for mph in mp.materia_profesor_dia_horario:  # Relación intermedia
+                dia_horario = mph.dia_horario
+                dia = Dia.query.get(dia_horario.dia_id)
+                horario = Horario.query.get(dia_horario.horario_id)
+
+                dias_horarios.append({
+                    "dia": dia.nombre,
+                    "hora_inicio": horario.hora_inicio.strftime("%H:%M"),
+                    "hora_final": horario.hora_final.strftime("%H:%M")
+                })
+
+            materias.append({
+                "materia_id": materia.id,
+                "materia_nombre": materia.nombre,
+                "dias_horarios": dias_horarios
+            })
+
+        resultado.append({
+            "id": profesor.id,
+            "ci": profesor.ci,
+            "nombre_profesor": profesor.nombre,
+            "apellido_profesor": profesor.apellido,
+            "telefono": profesor.telefono,
+            "direccion": profesor.direccion,
+            "users_id": profesor.users_id,
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "photo_url": user.photo_url,
+                "status": user.status
+            },
+            "materias": materias
+        })
+
+    return jsonify(resultado)
 
 
 @profesor_bp.route('/guardar', methods=['POST'])
 def guardar_profesor():
     try:
         data = request.form.to_dict()
+        materias_raw = data.get("materias")
+        materias_info = json.loads(materias_raw) if materias_raw else []
 
-        # Campos obligatorios para usuario y profesor
         name = data.get('name', '').strip()
         email = data.get('email', '').strip()
         password = data.get('password', '')
@@ -49,51 +112,45 @@ def guardar_profesor():
         apellido_prof = data.get('apellido_prof', '').strip()
         telefono = data.get('telefono')
         direccion = data.get('direccion', '').strip()
-        users_id = data.get('users_id')  # Usuario que crea/atiende al profesor
+        users_id = data.get('users_id')
 
-        # Validaciones básicas
         errors = []
         if len(name) < 3:
-            errors.append("El campo 'name' es obligatorio y debe tener al menos 3 caracteres.")
+            errors.append("El campo 'name' debe tener al menos 3 caracteres.")
         if '@' not in email:
-            errors.append("El campo 'email' es obligatorio y debe contener '@'.")
+            errors.append("El campo 'email' debe contener '@'.")
         if len(password) < 6:
-            errors.append("El campo 'password' es obligatorio y debe tener al menos 6 caracteres.")
+            errors.append("La contraseña debe tener al menos 6 caracteres.")
         if not ci or not ci.isdigit():
-            errors.append("El campo 'ci' es obligatorio y debe ser numérico.")
+            errors.append("El campo 'ci' debe ser numérico.")
+        if not users_id or not str(users_id).isdigit():
+            errors.append("El campo 'users_id' es obligatorio y numérico.")
         if len(nombre_prof) == 0:
             errors.append("El campo 'nombre_prof' es obligatorio.")
         if len(apellido_prof) == 0:
             errors.append("El campo 'apellido_prof' es obligatorio.")
-        if not users_id or not users_id.isdigit():
-            errors.append("El campo 'users_id' es obligatorio y debe ser numérico.")
         if len(direccion) == 0:
             errors.append("El campo 'direccion' es obligatorio.")
         if errors:
             return jsonify({"errors": errors}), 400
 
-        # Verificar que no existan duplicados name/email en usuarios
         if User.query.filter_by(name=name).first():
-            return jsonify({"error": "El nombre de usuario ya está registrado"}), 409
+            return jsonify({"error": "El nombre de usuario ya existe"}), 409
         if User.query.filter_by(email=email).first():
             return jsonify({"error": "El email ya está registrado"}), 409
 
-        # Obtener rol "Profesor"
         rol_profesor = Rol.query.filter_by(nombre="Profesor").first()
         if not rol_profesor:
-            return jsonify({"error": "Rol 'Profesor' no encontrado en base de datos"}), 500
+            return jsonify({"error": "Rol 'Profesor' no encontrado"}), 500
 
-        # Procesar foto (opcional)
         photo_url = None
         photo_storage = None
         file = request.files.get('photo')
         if file:
             if not allowed_file(file.filename):
                 return jsonify({"error": "Formato de imagen no permitido"}), 400
-            photo_storage, photo_url = save_user_photo(file, name)
-            current_app.logger.info(f"Foto guardada en: {photo_storage}")
+            photo_storage, photo_url = save_user_photo_by_role(file, name, rol_profesor.nombre)
 
-        # Crear usuario con rol Profesor
         password_hashed = generate_password_hash(password)
         user_profesor = User(
             name=name,
@@ -105,43 +162,80 @@ def guardar_profesor():
             rol_id=rol_profesor.id
         )
         db.session.add(user_profesor)
-        db.session.flush()  # para obtener user_profesor.id antes del commit
+        db.session.flush()
 
-        # Crear registro en tabla Profesor
         profesor = Profesor(
             ci=int(ci),
             nombre=nombre_prof,
             apellido=apellido_prof,
-            telefono=int(telefono) if telefono and telefono.isdigit() else None,
+            telefono=int(telefono) if telefono and str(telefono).isdigit() else None,
             direccion=direccion,
             users_id=int(users_id),
             users_profesor_id=user_profesor.id
         )
         db.session.add(profesor)
+        db.session.flush()
+
+        for materia_data in materias_info:
+            materia_id = materia_data.get("materia_id")
+            dias_horarios = materia_data.get("dias_horarios", [])
+            if not materia_id or not isinstance(dias_horarios, list):
+                continue
+
+            materia_profesor = MateriaProfesor(
+                materia_id=materia_id,
+                profesor_id=profesor.id
+            )
+            db.session.add(materia_profesor)
+            db.session.flush()
+
+            for dh_id in dias_horarios:
+                db.session.add(MateriaProfesorDiaHorario(
+                    materia_profesor_id=materia_profesor.id,
+                    dia_horario_id=dh_id
+                ))
+
         db.session.commit()
 
+        materias_resultado = []
+        for mp in profesor.materias_profesor:
+            materia = mp.materia
+            dias_horarios = []
+            for mph in mp.materia_profesor_dia_horario:
+                dh = mph.dia_horario
+                dias_horarios.append({
+                    "dia": dh.dia.nombre,
+                    "hora_inicio": dh.horario.hora_inicio.strftime("%H:%M"),
+                    "hora_final": dh.horario.hora_final.strftime("%H:%M")
+                })
+
+            materias_resultado.append({
+                "materia_id": materia.id,
+                "materia_nombre": materia.nombre,
+                "dias_horarios": dias_horarios
+            })
+
         return jsonify({
-            "message": "Profesor y usuario creados exitosamente",
+            "message": "Profesor, usuario y materias asignadas correctamente",
+            "profesor": {
+                "id": profesor.id,
+                "ci": profesor.ci,
+                "nombre_profesor": profesor.nombre,
+                "apellido_profesor": profesor.apellido,
+                "telefono": profesor.telefono,
+                "direccion": profesor.direccion,
+                "users_id": profesor.users_id,
+                "users_profesor_id": profesor.users_profesor_id
+            },
             "user": {
                 "id": user_profesor.id,
                 "name": user_profesor.name,
                 "email": user_profesor.email,
                 "photo_url": user_profesor.photo_url,
-                "status": user_profesor.status,
-                "rol": {"id": rol_profesor.id, "nombre": rol_profesor.nombre}
+                "status": user_profesor.status
             },
-            "profesor": {
-                "id": profesor.id,
-                "ci": profesor.ci,
-                "nombre": profesor.nombre,
-                "apellido": profesor.apellido,
-                "telefono": profesor.telefono,
-                "direccion": profesor.direccion,
-                "users_id": profesor.users_id,
-                "users_profesor_id": profesor.users_profesor_id
-            }
-        }
-        ), 201
+            "materias": materias_resultado
+        }), 201
 
     except IntegrityError as e:
         db.session.rollback()
@@ -152,86 +246,167 @@ def guardar_profesor():
         return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
 
 
+def get_or_create_dia_horario(dia_nombre, hora_inicio, hora_final):
+    dia = Dia.query.filter_by(nombre=dia_nombre).first()
+    if not dia:
+        dia = Dia(nombre=dia_nombre)
+        db.session.add(dia)
+        db.session.flush()
+
+    horario = Horario.query.filter_by(hora_inicio=hora_inicio, hora_final=hora_final).first()
+    if not horario:
+        horario = Horario(hora_inicio=hora_inicio, hora_final=hora_final)
+        db.session.add(horario)
+        db.session.flush()
+
+    dia_horario = DiaHorario.query.filter_by(dia_id=dia.id, horario_id=horario.id).first()
+    if not dia_horario:
+        dia_horario = DiaHorario(dia_id=dia.id, horario_id=horario.id)
+        db.session.add(dia_horario)
+        db.session.flush()
+
+    return dia_horario.id
 @profesor_bp.route('/actualizar/<int:profesor_id>', methods=['PUT'])
 def actualizar_profesor(profesor_id):
     profesor = Profesor.query.get_or_404(profesor_id)
     user = User.query.get_or_404(profesor.users_profesor_id)
+
     try:
         data = request.form.to_dict()
+        materias_raw = data.get("materias")
+        materias_info = json.loads(materias_raw) if materias_raw else []
 
-        errors = []
-        name = data.get('name')
-        email = data.get('email')
-        password = data.get('password')
+        name = data.get('name', '').strip()
+        email = data.get('email', '').strip()
+        password = data.get('password', '')
         ci = data.get('ci')
-        nombre_prof = data.get('nombre_prof')
-        apellido_prof = data.get('apellido_prof')
+        nombre_prof = data.get('nombre_prof', '').strip()
+        apellido_prof = data.get('apellido_prof', '').strip()
         telefono = data.get('telefono')
-        direccion = data.get('direccion')
+        direccion = data.get('direccion', '').strip()
         users_id = data.get('users_id')
 
-        if name:
-            name = name.strip()
-            exist = User.query.filter(User.name == name, User.id != user.id).first()
-            if exist:
-                errors.append("El nombre de usuario ya está registrado por otro usuario.")
-            else:
-                user.name = name
-
-        if email:
-            email = email.strip()
-            exist = User.query.filter(User.email == email, User.id != user.id).first()
-            if exist:
-                errors.append("El email ya está registrado por otro usuario.")
-            else:
-                user.email = email
-
-        if password:
-            if len(password) < 6:
-                errors.append("La contraseña debe tener al menos 6 caracteres.")
-            else:
-                user.password = generate_password_hash(password)
-
-        if ci:
-            if not ci.isdigit():
-                errors.append("El campo 'ci' debe ser numérico.")
-            else:
-                profesor.ci = int(ci)
-
-        if nombre_prof:
-            profesor.nombre = nombre_prof.strip()
-        if apellido_prof:
-            profesor.apellido = apellido_prof.strip()
-        if telefono:
-            if telefono.isdigit():
-                profesor.telefono = int(telefono)
-            else:
-                errors.append("El campo 'telefono' debe ser numérico o vacío.")
-        if direccion:
-            profesor.direccion = direccion.strip()
-        if users_id:
-            if users_id.isdigit():
-                profesor.users_id = int(users_id)
-            else:
-                errors.append("El campo 'users_id' debe ser numérico.")
-
+        errors = []
+        if len(name) < 3:
+            errors.append("El campo 'name' debe tener al menos 3 caracteres.")
+        if '@' not in email:
+            errors.append("El campo 'email' debe contener '@'.")
+        if password and len(password) < 6:
+            errors.append("La contraseña debe tener al menos 6 caracteres.")
+        if not ci or not ci.isdigit():
+            errors.append("El campo 'ci' debe ser numérico.")
+        if not users_id or not str(users_id).isdigit():
+            errors.append("El campo 'users_id' es obligatorio y numérico.")
+        if len(nombre_prof) == 0:
+            errors.append("El campo 'nombre_prof' es obligatorio.")
+        if len(apellido_prof) == 0:
+            errors.append("El campo 'apellido_prof' es obligatorio.")
+        if len(direccion) == 0:
+            errors.append("El campo 'direccion' es obligatorio.")
         if errors:
             return jsonify({"errors": errors}), 400
+
+        if User.query.filter(User.name == name, User.id != user.id).first():
+            return jsonify({"error": "El nombre de usuario ya existe"}), 409
+        if User.query.filter(User.email == email, User.id != user.id).first():
+            return jsonify({"error": "El email ya está registrado"}), 409
+
+        rol_profesor = Rol.query.filter_by(nombre="Profesor").first()
+        if not rol_profesor:
+            return jsonify({"error": "Rol 'Profesor' no encontrado"}), 500
 
         file = request.files.get('photo')
         if file:
             if not allowed_file(file.filename):
                 return jsonify({"error": "Formato de imagen no permitido"}), 400
-
             if user.photo_storage and os.path.exists(user.photo_storage):
                 os.remove(user.photo_storage)
-
-            photo_storage, photo_url = save_user_photo(file, user.name)
+            photo_storage, photo_url = save_user_photo_by_role(file, name, rol_profesor.nombre)
             user.photo_storage = photo_storage
             user.photo_url = photo_url
 
+        user.name = name
+        user.email = email
+        if password:
+            user.password = generate_password_hash(password)
+
+        profesor.ci = int(ci)
+        profesor.nombre = nombre_prof
+        profesor.apellido = apellido_prof
+        profesor.telefono = int(telefono) if telefono and str(telefono).isdigit() else None
+        profesor.direccion = direccion
+        profesor.users_id = int(users_id)
+
+        for mp in profesor.materias_profesor:
+            for mph in mp.materia_profesor_dia_horario:
+                db.session.delete(mph)
+            db.session.delete(mp)
+
+        for materia_data in materias_info:
+            materia_id = materia_data.get("materia_id")
+            dias_horarios = materia_data.get("dias_horarios", [])
+            if not materia_id or not isinstance(dias_horarios, list):
+                continue
+
+            materia_profesor = MateriaProfesor(
+                materia_id=materia_id,
+                profesor_id=profesor.id
+            )
+            db.session.add(materia_profesor)
+            db.session.flush()
+
+            for dh in dias_horarios:
+                dia_nombre = dh.get("dia")
+                hora_inicio = dh.get("hora_inicio")
+                hora_final = dh.get("hora_final")
+                if dia_nombre and hora_inicio and hora_final:
+                    dia_horario_id = get_or_create_dia_horario(dia_nombre, hora_inicio, hora_final)
+                    db.session.add(MateriaProfesorDiaHorario(
+                        materia_profesor_id=materia_profesor.id,
+                        dia_horario_id=dia_horario_id
+                    ))
+
         db.session.commit()
-        return jsonify({"message": "Profesor y usuario actualizados correctamente"})
+
+        materias_resultado = []
+        for mp in profesor.materias_profesor:
+            materia = mp.materia
+            dias_horarios = []
+            for mph in mp.materia_profesor_dia_horario:
+                dh = mph.dia_horario
+                dias_horarios.append({
+                    "dia": dh.dia.nombre,
+                    "hora_inicio": dh.horario.hora_inicio.strftime("%H:%M"),
+                    "hora_final": dh.horario.hora_final.strftime("%H:%M")
+                })
+
+            materias_resultado.append({
+                "materia_id": materia.id,
+                "materia_nombre": materia.nombre,
+                "dias_horarios": dias_horarios
+            })
+
+        return jsonify({
+            "message": "Profesor, usuario y materias actualizadas correctamente",
+            "profesor": {
+                "id": profesor.id,
+                "ci": profesor.ci,
+                "nombre_profesor": profesor.nombre,
+                "apellido_profesor": profesor.apellido,
+                "telefono": profesor.telefono,
+                "direccion": profesor.direccion,
+                "users_id": profesor.users_id,
+                "users_profesor_id": profesor.users_profesor_id
+            },
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "photo_url": user.photo_url,
+                "status": user.status
+            },
+            "materias": materias_resultado
+        })
 
     except Exception as e:
         db.session.rollback()
@@ -239,37 +414,147 @@ def actualizar_profesor(profesor_id):
         return jsonify({"error": f"Error al actualizar: {str(e)}"}), 500
 
 
-@profesor_bp.route('/listar', methods=['GET'])
-def listar_profesores():
-    profesores = Profesor.query.all()
-    result = []
-    for p in profesores:
-        user = User.query.get(p.users_profesor_id)
-        rol = Rol.query.get(user.rol_id) if user else None
-        result.append({
-            "profesor_id": p.id,
-            "ci": p.ci,
-            "nombre_profesor": p.nombre,
-            "apellido_profesor": p.apellido,
-            "telefono": p.telefono,
-            "direccion": p.direccion,
-            "users_id": p.users_id,
-            "users_profesor_id": p.users_profesor_id,
-            "user": {
-                "id": user.id if user else None,
-                "name": user.name if user else None,
-                "email": user.email if user else None,
-                "photo_url": user.photo_url if user else None,
-                "status": user.status if user else None,
-                "rol": {
-                    "id": rol.id if rol else None,
-                    "nombre": rol.nombre if rol else None
-                } if rol else None
-            }
-        }
-        )
-    return jsonify(result)
-
+# @profesor_bp.route('/actualizar/<int:profesor_id>', methods=['PUT'])
+# def actualizar_profesor(profesor_id):
+#     profesor = Profesor.query.get_or_404(profesor_id)
+#     user = User.query.get_or_404(profesor.users_profesor_id)
+#
+#     try:
+#         data = request.form.to_dict()
+#         materias_raw = data.get("materias")
+#         materias_info = json.loads(materias_raw) if materias_raw else []
+#
+#         name = data.get('name', '').strip()
+#         email = data.get('email', '').strip()
+#         password = data.get('password', '')
+#         ci = data.get('ci')
+#         nombre_prof = data.get('nombre_prof', '').strip()
+#         apellido_prof = data.get('apellido_prof', '').strip()
+#         telefono = data.get('telefono')
+#         direccion = data.get('direccion', '').strip()
+#         users_id = data.get('users_id')
+#
+#         errors = []
+#         if len(name) < 3:
+#             errors.append("El campo 'name' debe tener al menos 3 caracteres.")
+#         if '@' not in email:
+#             errors.append("El campo 'email' debe contener '@'.")
+#         if password and len(password) < 6:
+#             errors.append("La contraseña debe tener al menos 6 caracteres.")
+#         if not ci or not ci.isdigit():
+#             errors.append("El campo 'ci' debe ser numérico.")
+#         if not users_id or not str(users_id).isdigit():
+#             errors.append("El campo 'users_id' es obligatorio y numérico.")
+#         if len(nombre_prof) == 0:
+#             errors.append("El campo 'nombre_prof' es obligatorio.")
+#         if len(apellido_prof) == 0:
+#             errors.append("El campo 'apellido_prof' es obligatorio.")
+#         if len(direccion) == 0:
+#             errors.append("El campo 'direccion' es obligatorio.")
+#         if errors:
+#             return jsonify({"errors": errors}), 400
+#
+#         if User.query.filter(User.name == name, User.id != user.id).first():
+#             return jsonify({"error": "El nombre de usuario ya existe"}), 409
+#         if User.query.filter(User.email == email, User.id != user.id).first():
+#             return jsonify({"error": "El email ya está registrado"}), 409
+#
+#         rol_profesor = Rol.query.filter_by(nombre="Profesor").first()
+#         if not rol_profesor:
+#             return jsonify({"error": "Rol 'Profesor' no encontrado"}), 500
+#
+#         file = request.files.get('photo')
+#         if file:
+#             if not allowed_file(file.filename):
+#                 return jsonify({"error": "Formato de imagen no permitido"}), 400
+#             if user.photo_storage and os.path.exists(user.photo_storage):
+#                 os.remove(user.photo_storage)
+#             photo_storage, photo_url = save_user_photo_by_role(file, name, rol_profesor.nombre)
+#             user.photo_storage = photo_storage
+#             user.photo_url = photo_url
+#
+#         user.name = name
+#         user.email = email
+#         if password:
+#             user.password = generate_password_hash(password)
+#
+#         profesor.ci = int(ci)
+#         profesor.nombre = nombre_prof
+#         profesor.apellido = apellido_prof
+#         profesor.telefono = int(telefono) if telefono and str(telefono).isdigit() else None
+#         profesor.direccion = direccion
+#         profesor.users_id = int(users_id)
+#
+#         for mp in profesor.materias_profesor:
+#             for mph in mp.materia_profesor_dia_horario:
+#                 db.session.delete(mph)
+#             db.session.delete(mp)
+#
+#         for materia_data in materias_info:
+#             materia_id = materia_data.get("materia_id")
+#             dias_horarios = materia_data.get("dias_horarios", [])
+#             if not materia_id or not isinstance(dias_horarios, list):
+#                 continue
+#
+#             materia_profesor = MateriaProfesor(
+#                 materia_id=materia_id,
+#                 profesor_id=profesor.id
+#             )
+#             db.session.add(materia_profesor)
+#             db.session.flush()
+#
+#             for dh_id in dias_horarios:
+#                 db.session.add(MateriaProfesorDiaHorario(
+#                     materia_profesor_id=materia_profesor.id,
+#                     dia_horario_id=dh_id
+#                 ))
+#
+#         db.session.commit()
+#
+#         materias_resultado = []
+#         for mp in profesor.materias_profesor:
+#             materia = mp.materia
+#             dias_horarios = []
+#             for mph in mp.materia_profesor_dia_horario:
+#                 dh = mph.dia_horario
+#                 dias_horarios.append({
+#                     "dia": dh.dia.nombre,
+#                     "hora_inicio": dh.horario.hora_inicio.strftime("%H:%M"),
+#                     "hora_final": dh.horario.hora_final.strftime("%H:%M")
+#                 })
+#
+#             materias_resultado.append({
+#                 "materia_id": materia.id,
+#                 "materia_nombre": materia.nombre,
+#                 "dias_horarios": dias_horarios
+#             })
+#
+#         return jsonify({
+#             "message": "Profesor, usuario y materias actualizadas correctamente",
+#             "profesor": {
+#                 "id": profesor.id,
+#                 "ci": profesor.ci,
+#                 "nombre_profesor": profesor.nombre,
+#                 "apellido_profesor": profesor.apellido,
+#                 "telefono": profesor.telefono,
+#                 "direccion": profesor.direccion,
+#                 "users_id": profesor.users_id,
+#                 "users_profesor_id": profesor.users_profesor_id
+#             },
+#             "user": {
+#                 "id": user.id,
+#                 "name": user.name,
+#                 "email": user.email,
+#                 "photo_url": user.photo_url,
+#                 "status": user.status
+#             },
+#             "materias": materias_resultado
+#         })
+#
+#     except Exception as e:
+#         db.session.rollback()
+#         current_app.logger.error(f"Error al actualizar profesor: {str(e)}")
+#         return jsonify({"error": f"Error al actualizar: {str(e)}"}), 500
 
 @profesor_bp.route('/buscar', methods=['GET'])
 def buscar_profesores():
@@ -343,7 +628,7 @@ def eliminar_profesor(profesor_id):
         return jsonify({"error": f"No se pudo eliminar: {str(e)}"}), 500
 
 
-@profesor_bp.route('/uploads/<filename>', methods=['GET'])
-def servir_foto_profesor(filename):
-    folder = os.path.join(current_app.config.get('UPLOAD_FOLDER', 'uploads'), 'users')
+@profesor_bp.route('/uploads/<rol>/<filename>', methods=['GET'])
+def servir_foto_por_rol(rol, filename):
+    folder = os.path.join(current_app.config.get('UPLOAD_FOLDER', 'uploads'), rol)
     return send_from_directory(folder, filename)
