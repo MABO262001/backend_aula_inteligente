@@ -7,8 +7,10 @@
     <list default="true" id="85bee736-e50b-43ad-8081-f86b1119e6ce" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manage.py" beforeDir="false" afterPath="$PROJECT_DIR$/manage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/user_profesor_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/user_profesor_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/seeders/user_seeder.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/seeders/user_seeder.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,7 +109,7 @@
       <workItem from="1747855645701" duration="28822000" />
       <workItem from="1747935798938" duration="2139000" />
       <workItem from="1747950937265" duration="12087000" />
-      <workItem from="1747999994225" duration="1689000" />
+      <workItem from="1747999994225" duration="7753000" />
     </task>
     <servers />
   </component>

@@ -13,7 +13,8 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "/app/uploads")
+    # UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "/app/uploads")
+    UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", os.path.join(os.getcwd(), 'uploads'))
     BASE_URL = os.getenv("BASE_URL", "http://localhost:5000")
     MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10 MB
 

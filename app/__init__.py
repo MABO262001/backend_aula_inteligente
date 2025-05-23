@@ -60,6 +60,7 @@ def create_app():
 
     CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
 
+    print("[DEBUG] UPLOAD_FOLDER:", app.config['UPLOAD_FOLDER'])
 
     db.init_app(app)
     migrate.init_app(app, db)

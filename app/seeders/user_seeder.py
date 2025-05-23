@@ -63,9 +63,9 @@ def seed_users():
 
         roles = {
             1: 7,    # Administradores
-            2: 13,   # Profesores
-            3: 200, # Estudiantes
-            4: 40   # Apoderados
+            2: 5,   # Profesores
+            3: 50, # Estudiantes
+            4: 20   # Apoderados
         }
 
         for rol_id, count in roles.items():
