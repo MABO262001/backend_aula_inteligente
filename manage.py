@@ -52,3 +52,22 @@ def seed_db():
     """Inserta todos los datos de prueba."""
     from app.seeders.main_seeder import run_all_seeders
     run_all_seeders()
+
+
+@app.cli.command("reset-db")
+@with_appcontext
+def reset_db():
+    """Elimina, recrea la base de datos y ejecuta los seeders."""
+    from app import db
+    from app.seeders.main_seeder import run_all_seeders
+
+    # Eliminar y recrear la base de datos
+    db.drop_all()
+    print("❌ Base de datos eliminada.")
+    db.create_all()
+    print("✅ Base de datos creada nuevamente.")
+
+    # Ejecutar los seeders
+    print("🌱 Ejecutando seeders...")
+    run_all_seeders()
+    print("✅ Seeders ejecutados correctamente.")
