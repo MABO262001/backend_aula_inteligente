@@ -283,3 +283,23 @@ def eliminar_usuario(user_id):
 def servir_foto_usuario(filename):
     folder = os.path.join(current_app.config.get('UPLOAD_FOLDER', 'uploads'), 'users')
     return send_from_directory(folder, filename)
+
+@user_bp.route('/listar_adminitrador', methods=['GET'])
+def listar_usuarios_administrador():
+    users = User.query.filter_by(status=True).all()
+    result = []
+    for user in users:
+        rol = Rol.query.get(user.rol_id)
+        if rol and rol.nombre == "Administrador":
+            result.append({
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "photo_url": user.photo_url,
+                "status": user.status,
+                "rol": {
+                    "id": rol.id if rol else None,
+                    "nombre": rol.nombre if rol else None
+                }
+            })
+    return jsonify(result)
