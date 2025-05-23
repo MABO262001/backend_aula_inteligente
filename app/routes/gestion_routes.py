@@ -18,7 +18,7 @@ from ..models.horario import Horario
 
 gestion_bp = Blueprint('gestion_bp', __name__)
 
-@gestion_bp.route('/listar', methods=['GET'])
+@gestion_bp.route('/listar-estructura', methods=['GET'])
 def listar_estructura_gestion():
     gestiones = Gestion.query.options(
         joinedload(Gestion.gestion_curso_paralelos)
@@ -109,3 +109,53 @@ def listar_estructura_gestion():
         resultado.append(gestion_dict)
 
     return jsonify(resultado)
+
+# Listar todos los registros
+@gestion_bp.route('/listar', methods=['GET'])
+def listar():
+    gestiones = Gestion.query.all()
+    result = [
+        {
+            "id": g.id,
+            "nombre": g.nombre
+        } for g in gestiones
+    ]
+    return jsonify(result), 200
+
+# Buscar un registro por ID
+@gestion_bp.route('/buscar/<int:id>', methods=['GET'])
+def buscar(id):
+    gestion = Gestion.query.get_or_404(id)
+    result = {
+        "id": gestion.id,
+        "nombre": gestion.nombre
+    }
+    return jsonify(result), 200
+
+# Crear un nuevo registro
+@gestion_bp.route('/guardar', methods=['POST'])
+def guardar():
+    data = request.get_json()
+    nueva_gestion = Gestion(
+        nombre=data['nombre']
+    )
+    db.session.add(nueva_gestion)
+    db.session.commit()
+    return jsonify({"message": "Registro creado exitosamente"}), 201
+
+# Actualizar un registro existente
+@gestion_bp.route('/actualizar/<int:id>', methods=['PUT'])
+def actualizar(id):
+    data = request.get_json()
+    gestion = Gestion.query.get_or_404(id)
+    gestion.nombre = data.get('nombre', gestion.nombre)
+    db.session.commit()
+    return jsonify({"message": "Registro actualizado exitosamente"}), 200
+
+# Eliminar un registro
+@gestion_bp.route('/eliminar/<int:id>', methods=['DELETE'])
+def eliminar(id):
+    gestion = Gestion.query.get_or_404(id)
+    db.session.delete(gestion)
+    db.session.commit()
+    return jsonify({"message": "Registro eliminado exitosamente"}), 200

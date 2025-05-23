@@ -7,3 +7,8 @@ class EstudianteParticipa(db.Model):
     estado = db.Column(db.String(50), nullable=False)
     participacion_id = db.Column(db.Integer, db.ForeignKey("participacion.id"), nullable=False)
     estudiante_id = db.Column(db.Integer, db.ForeignKey("estudiante.id"), nullable=False)
+
+    estudiante = db.relationship("Estudiante", backref="participacion_estudiante", lazy="joined")
+    participacion = db.relationship("Participacion", backref="participacion_estudiante", lazy="joined")
+
+

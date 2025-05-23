@@ -228,7 +228,7 @@ def guardar_profesor():
         return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
 
 
-@profesor_bp.route('/actualizar/<int:profesor_id>', methods=['PUT'])
+@profesor_bp.route('/actualizar/<int:profesor_id>', methods=['PATCH'])
 def actualizar_profesor(profesor_id):
     profesor = Profesor.query.get_or_404(profesor_id)
     user = User.query.get_or_404(profesor.users_profesor_id)
@@ -236,17 +236,16 @@ def actualizar_profesor(profesor_id):
     try:
         data = request.form.to_dict()
         materias_raw = data.get("materias")
-        materias_info = json.loads(materias_raw) if materias_raw else []
 
-        name = data.get('name', '').strip()
-        email = data.get('email', '').strip()
+        name = data.get('name', user.name).strip()
+        email = data.get('email', user.email).strip()
         password = data.get('password', '')
-        ci = data.get('ci')
-        nombre_prof = data.get('nombre_prof', '').strip()
-        apellido_prof = data.get('apellido_prof', '').strip()
-        telefono = data.get('telefono')
-        direccion = data.get('direccion', '').strip()
-        users_id = data.get('users_id')
+        ci = data.get('ci', str(profesor.ci))
+        nombre_prof = data.get('nombre_prof', profesor.nombre).strip()
+        apellido_prof = data.get('apellido_prof', profesor.apellido).strip()
+        telefono = data.get('telefono', str(profesor.telefono) if profesor.telefono else '')
+        direccion = data.get('direccion', profesor.direccion).strip()
+        users_id = data.get('users_id', str(profesor.users_id))
 
         errors = []
         if len(name) < 3:
@@ -255,15 +254,15 @@ def actualizar_profesor(profesor_id):
             errors.append("El campo 'email' debe contener '@'.")
         if password and len(password) < 6:
             errors.append("La contraseña debe tener al menos 6 caracteres.")
-        if not ci or not ci.isdigit():
+        if not ci.isdigit():
             errors.append("El campo 'ci' debe ser numérico.")
-        if not users_id or not str(users_id).isdigit():
+        if not users_id.isdigit():
             errors.append("El campo 'users_id' es obligatorio y numérico.")
-        if len(nombre_prof) == 0:
+        if not nombre_prof:
             errors.append("El campo 'nombre_prof' es obligatorio.")
-        if len(apellido_prof) == 0:
+        if not apellido_prof:
             errors.append("El campo 'apellido_prof' es obligatorio.")
-        if len(direccion) == 0:
+        if not direccion:
             errors.append("El campo 'direccion' es obligatorio.")
         if errors:
             return jsonify({"errors": errors}), 400
@@ -278,9 +277,7 @@ def actualizar_profesor(profesor_id):
             return jsonify({"error": "Rol 'Profesor' no encontrado"}), 500
 
         file = request.files.get('photo')
-        if file:
-            if not allowed_file(file.filename):
-                return jsonify({"error": "Formato de imagen no permitido"}), 400
+        if file and allowed_file(file.filename):
             if user.photo_storage and os.path.exists(user.photo_storage):
                 os.remove(user.photo_storage)
             photo_storage, photo_url = save_user_photo_by_role(file, name, rol_profesor.nombre)
@@ -295,50 +292,51 @@ def actualizar_profesor(profesor_id):
         profesor.ci = int(ci)
         profesor.nombre = nombre_prof
         profesor.apellido = apellido_prof
-        profesor.telefono = int(telefono) if telefono and str(telefono).isdigit() else None
+        profesor.telefono = int(telefono) if telefono.isdigit() else None
         profesor.direccion = direccion
         profesor.users_id = int(users_id)
 
-        for mp in profesor.materias_profesor:
-            for mph in mp.materia_profesor_dia_horario:
-                db.session.delete(mph)
-            db.session.delete(mp)
+        if materias_raw is not None:
+            materias_info = json.loads(materias_raw)
+            for mp in profesor.materias_profesor:
+                for mph in mp.materia_profesor_dia_horario:
+                    db.session.delete(mph)
+                db.session.delete(mp)
 
-        for materia_data in materias_info:
-            materia_id = materia_data.get("materia_id")
-            dias_horarios = materia_data.get("dias_horarios", [])
-            if not materia_id or not isinstance(dias_horarios, list):
-                continue
-
-            materia_profesor = MateriaProfesor(
-                materia_id=materia_id,
-                profesor_id=profesor.id
-            )
-            db.session.add(materia_profesor)
-            db.session.flush()
-
-            for dh in dias_horarios:
-                if isinstance(dh, int):
-                    dia_horario_id = dh
-                elif isinstance(dh, dict):
-                    dia_nombre = dh.get("dia")
-                    hora_inicio = dh.get("hora_inicio")
-                    hora_final = dh.get("hora_final")
-                    if dia_nombre and hora_inicio and hora_final:
-                        dia_horario_id = get_or_create_dia_horario(dia_nombre, hora_inicio, hora_final)
-                    else:
-                        continue
-                else:
+            for materia_data in materias_info:
+                materia_id = materia_data.get("materia_id")
+                dias_horarios = materia_data.get("dias_horarios", [])
+                if not materia_id or not isinstance(dias_horarios, list):
                     continue
 
-                db.session.add(MateriaProfesorDiaHorario(
-                    materia_profesor_id=materia_profesor.id,
-                    dia_horario_id=dia_horario_id
-                ))
+                materia_profesor = MateriaProfesor(
+                    materia_id=materia_id,
+                    profesor_id=profesor.id
+                )
+                db.session.add(materia_profesor)
+                db.session.flush()
+
+                for dh in dias_horarios:
+                    if isinstance(dh, int):
+                        dia_horario_id = dh
+                    elif isinstance(dh, dict):
+                        dia_nombre = dh.get("dia")
+                        hora_inicio = dh.get("hora_inicio")
+                        hora_final = dh.get("hora_final")
+                        if dia_nombre and hora_inicio and hora_final:
+                            dia_horario_id = get_or_create_dia_horario(dia_nombre, hora_inicio, hora_final)
+                        else:
+                            continue
+                    else:
+                        continue
+
+                    db.session.add(MateriaProfesorDiaHorario(
+                        materia_profesor_id=materia_profesor.id,
+                        dia_horario_id=dia_horario_id
+                    ))
 
         db.session.commit()
 
-        # Preparar resultado
         materias_resultado = []
         for mp in profesor.materias_profesor:
             materia = mp.materia

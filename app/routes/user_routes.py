@@ -206,7 +206,7 @@ def buscar_usuarios():
         })
     return jsonify(result)
 
-@user_bp.route('/actualizar/<int:user_id>', methods=['PUT'])
+@user_bp.route('/actualizar/<int:user_id>', methods=['PATCH'])
 def actualizar_usuario(user_id):
     user = User.query.get_or_404(user_id)
     try:
@@ -239,12 +239,6 @@ def actualizar_usuario(user_id):
             if not rol:
                 return jsonify({"error": "rol_id inválido"}), 400
             user.rol_id = rol_id
-        else:
-            # Si no envían rol_id, asignar Administrador por defecto
-            rol = Rol.query.filter_by(nombre="Administrador").first()
-            if not rol:
-                return jsonify({"error": "Rol 'Administrador' no encontrado"}), 500
-            user.rol_id = rol.id
 
         file = request.files.get('photo')
         if file:
@@ -259,11 +253,21 @@ def actualizar_usuario(user_id):
             user.photo_url = photo_url
 
         db.session.commit()
-        return jsonify({"message": "Usuario actualizado correctamente"})
+        return jsonify({
+            "message": "Usuario actualizado correctamente",
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "photo_url": user.photo_url,
+                "status": user.status
+            }
+        })
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Error al actualizar usuario: {str(e)}"}), 500
 
+        
 @user_bp.route('/eliminar/<int:user_id>', methods=['DELETE'])
 def eliminar_usuario(user_id):
     user = User.query.get_or_404(user_id)
