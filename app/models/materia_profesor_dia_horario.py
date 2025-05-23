@@ -8,3 +8,4 @@ class MateriaProfesorDiaHorario(db.Model):
     dia_horario_id = db.Column(db.Integer, db.ForeignKey("dia_horario.id"), nullable=False)
 
     dia_horario = db.relationship('DiaHorario', backref='materia_profesor_dia_horario_rel')
+    materia_profesor = db.relationship('MateriaProfesor', backref='materia_profesor_dia_horario_rel')

@@ -50,6 +50,7 @@ from .routes.rol_routes import rol_bp
 from .routes.dia_routes import dia_bp
 from .routes.horario_routes import horario_bp
 from .routes.materia_routes import materia_bp
+from .routes.gestion_routes import gestion_bp
 
 from flask_cors import CORS
 
@@ -73,5 +74,6 @@ def create_app():
     app.register_blueprint(dia_bp, url_prefix='/api/dias')
     app.register_blueprint(horario_bp, url_prefix='/api/horario')
     app.register_blueprint(materia_bp, url_prefix='/api/materias')
+    app.register_blueprint(gestion_bp, url_prefix='/api/gestion')
 
     return app
