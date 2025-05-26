@@ -99,12 +99,11 @@ def listar_estudiantes():
 
     return jsonify(resultado)
 
-
 @estudiante_bp.route('/guardar_user', methods=['POST'])
 def guardar_estudiante_user():
     try:
         data = request.form.to_dict()
-        parentescos_raw = data.get("parentescos")  # formato JSON string
+        parentescos_raw = data.get("parentescos")
         parentescos = []
         if parentescos_raw:
             import json
@@ -147,7 +146,6 @@ def guardar_estudiante_user():
         if file and allowed_file(file.filename):
             photo_storage, photo_url = save_user_photo(file, name, rol.nombre)
 
-        # Crear usuario estudiante
         from werkzeug.security import generate_password_hash
         new_user = User(
             name=name,
@@ -213,7 +211,6 @@ def actualizar_estudiante_user(estudiante_id):
             import json
             parentescos = json.loads(parentescos_raw)
 
-        # Actualizar datos del usuario si se enviaron
         if 'name' in data:
             name = data['name'].strip()
             if User.query.filter(User.name == name, User.id != user.id).first():
@@ -230,7 +227,6 @@ def actualizar_estudiante_user(estudiante_id):
             from werkzeug.security import generate_password_hash
             user.password = generate_password_hash(data['password'])
 
-        # Actualizar imagen si se envía
         file = request.files.get('photo')
         if file and allowed_file(file.filename):
             if user.photo_storage and os.path.exists(user.photo_storage):
@@ -239,7 +235,6 @@ def actualizar_estudiante_user(estudiante_id):
             user.photo_storage = photo_storage
             user.photo_url = photo_url
 
-        # Actualizar datos del estudiante
         if 'ci' in data and data['ci'].isdigit():
             estudiante.ci = int(data['ci'])
 
@@ -258,9 +253,8 @@ def actualizar_estudiante_user(estudiante_id):
         if 'users_id' in data and data['users_id'].isdigit():
             estudiante.users_id = int(data['users_id'])
 
-        # Actualizar parentescos si se envían
         if parentescos:
-            # Eliminar parentescos actuales
+
             Parentesco.query.filter_by(estudiante_id=estudiante.id).delete()
             for p in parentescos:
                 apo_ci = p.get("ci")
@@ -288,3 +282,96 @@ def actualizar_estudiante_user(estudiante_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
+
+@estudiante_bp.route('/desactivar_user/<int:estudiante_id>', methods=['DELETE'])
+def desactivar_user_estudiante(estudiante_id):
+    estudiante = Estudiante.query.get_or_404(estudiante_id)
+    user = User.query.get_or_404(estudiante.users_estudiante_id)
+
+    try:
+        user.status = False
+        db.session.commit()
+        return jsonify({
+            "message": "Estudiante y usuario desactivados correctamente",
+            "estudiante_id": estudiante.id,
+            "user_id": user.id,
+            "ci": estudiante.ci,
+            "nombre": estudiante.nombre,
+            "apellido": estudiante.apellido,
+            "sexo": estudiante.sexo,
+            "telefono": estudiante.telefono,
+            "status": user.status
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"No se pudo desactivar: {str(e)}"}), 500
+
+@estudiante_bp.route('/eliminar_definitivamente/<int:estudiante_id>', methods=['DELETE'])
+def eliminar_user_estudiante_definitivamente(estudiante_id):
+    estudiante = Estudiante.query.get_or_404(estudiante_id)
+    user = User.query.get_or_404(estudiante.users_estudiante_id)
+
+    try:
+        if user.photo_storage and os.path.exists(user.photo_storage):
+            os.remove(user.photo_storage)
+
+        Parentesco.query.filter_by(estudiante_id=estudiante.id).delete()
+        db.session.delete(estudiante)
+        db.session.delete(user)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Estudiante y usuario eliminados permanentemente",
+            "estudiante_id": estudiante_id
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"No se pudo eliminar: {str(e)}"}), 500
+
+
+@estudiante_bp.route('/uploads/<rol>/<filename>', methods=['GET'])
+def servir_foto_por_rol(rol, filename):
+    try:
+        base_upload_folder = os.path.abspath(current_app.config.get('UPLOAD_FOLDER', 'uploads'))
+        folder = os.path.join(base_upload_folder, rol)
+
+        file_path = os.path.join(folder, filename)
+        if not os.path.exists(file_path):
+            return jsonify({
+                "error": "Archivo no encontrado",
+                "ruta": file_path
+            }), 404
+
+        return send_from_directory(folder, filename)
+    except Exception as e:
+        return jsonify({"error": f"Error al servir la imagen: {str(e)}"}), 500
+
+@estudiante_bp.route('/buscar', methods=['GET'])
+def buscar_estudiantes():
+    args = request.args
+    query = Estudiante.query
+
+    if 'ci' in args and args['ci'].isdigit():
+        query = query.filter(Estudiante.ci == int(args['ci']))
+    if 'nombre' in args:
+        query = query.filter(Estudiante.nombre.ilike(f"%{args['nombre']}%"))
+    if 'apellido' in args:
+        query = query.filter(Estudiante.apellido.ilike(f"%{args['apellido']}%"))
+    if 'sexo' in args:
+        query = query.filter(Estudiante.sexo.ilike(f"%{args['sexo']}%"))
+    if 'telefono' in args and args['telefono'].isdigit():
+        query = query.filter(Estudiante.telefono == int(args['telefono']))
+    if 'users_id' in args and args['users_id'].isdigit():
+        query = query.filter(Estudiante.users_id == int(args['users_id']))
+    if 'users_estudiante_id' in args and args['users_estudiante_id'].isdigit():
+        query = query.filter(Estudiante.users_estudiante_id == int(args['users_estudiante_id']))
+
+    estudiantes = query.all()
+    resultado = []
+
+    for est in estudiantes:
+        user = User.query.get(est.users_estudiante_id)
+        if user:
+            resultado.append(serializar_estudiante(est, user))
+
+    return jsonify(resultado)
