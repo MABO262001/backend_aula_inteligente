@@ -1,15 +1,16 @@
 import os
-import json
 from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash
+from sqlalchemy.exc import IntegrityError
+from datetime import datetime
+
 from ..extensions import db
 from ..models.user import User
 from ..models.rol import Rol
 from ..models.estudiante import Estudiante
-from ..models.apoderado import Apoderado
 from ..models.parentesco import Parentesco
-from datetime import datetime
+from ..models.apoderado import Apoderado
 
 estudiante_bp = Blueprint('estudiante_bp', __name__)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -27,29 +28,51 @@ def save_user_photo(file, username, role_name):
     path = os.path.join(folder_rol, safe_name)
     file.save(path)
     base_url = current_app.config.get('BASE_URL', '')
-    url = f"{base_url}/api/estudiantes/uploads/{role_name.lower()}/{safe_name}"
+    url = f"{base_url}/api/estudiante/uploads/{role_name.lower()}/{safe_name}"
     return path, url
 
-def serializar_estudiante(est, user):
+def to_int_if_str(val):
+    if isinstance(val, int):
+        return val
+    if isinstance(val, str) and val.isdigit():
+        return int(val)
+    return None
+
+def serializar_estudiante(estudiante, user):
     rol = Rol.query.get(user.rol_id)
+
+    parentescos = estudiante.parentesco_estudiante
     apoderados = []
-    for par in Parentesco.query.filter_by(estudiante_id=est.id).all():
-        apo = Apoderado.query.get(par.apoderado_id)
-        if apo:
-            apoderados.append({
-                "nombre": par.nombre,
+    for parentesco in parentescos:
+        apo = parentesco.apoderado
+        apo_user = User.query.get(apo.users_apoderado_id)
+        apoderados.append({
+            "tipo": parentesco.nombre,
+            "apoderado": {
+                "id": apo.id,
                 "ci": apo.ci,
-                "nombre_completo": f"{apo.nombre} {apo.apellido}"
-            })
+                "nombre": f"{apo.nombre} {apo.apellido}",
+                "sexo": apo.sexo,
+                "telefono": apo.telefono,
+                "user": {
+                    # "id": apo_user.id if apo_user else None,
+                    # "name": apo_user.name if apo_user else None,
+                    "email": apo_user.email if apo_user else None,
+                    # "photo_url": apo_user.photo_url if apo_user else None,
+                    # "status": apo_user.status if apo_user else None,
+                }
+            }
+        })
+
     return {
-        "estudiante_id": est.id,
-        "ci": est.ci,
-        "nombre": est.nombre,
-        "apellido": est.apellido,
-        "sexo": est.sexo,
-        "telefono": est.telefono,
-        "users_id": est.users_id,
-        "users_estudiante_id": est.users_estudiante_id,
+        "estudiante_id": estudiante.id,
+        "ci": estudiante.ci,
+        "nombre": estudiante.nombre,
+        "apellido": estudiante.apellido,
+        "sexo": estudiante.sexo,
+        "telefono": estudiante.telefono,
+        "users_id": estudiante.users_id,
+        "users_estudiante_id": estudiante.users_estudiante_id,
         "user": {
             "id": user.id,
             "name": user.name,
@@ -64,12 +87,27 @@ def serializar_estudiante(est, user):
         "apoderados": apoderados
     }
 
-@estudiante_bp.route('/guardar', methods=['POST'])
-def guardar_estudiante():
+@estudiante_bp.route('/listar', methods=['GET'])
+def listar_estudiantes():
+    estudiantes = Estudiante.query.all()
+    resultado = []
+
+    for est in estudiantes:
+        user = User.query.get(est.users_estudiante_id)
+        if user:
+            resultado.append(serializar_estudiante(est, user))
+
+    return jsonify(resultado)
+
+@estudiante_bp.route('/guardar_user', methods=['POST'])
+def guardar_estudiante_user():
     try:
         data = request.form.to_dict()
         parentescos_raw = data.get("parentescos")
-        parentescos_info = json.loads(parentescos_raw) if parentescos_raw else []
+        parentescos = []
+        if parentescos_raw:
+            import json
+            parentescos = json.loads(parentescos_raw)
 
         name = data.get("name", "").strip()
         email = data.get("email", "").strip()
@@ -108,11 +146,11 @@ def guardar_estudiante():
         if file and allowed_file(file.filename):
             photo_storage, photo_url = save_user_photo(file, name, rol.nombre)
 
-        hashed_pw = generate_password_hash(password)
+        from werkzeug.security import generate_password_hash
         new_user = User(
             name=name,
             email=email,
-            password=hashed_pw,
+            password=generate_password_hash(password),
             photo_url=photo_url,
             photo_storage=photo_storage,
             status=True,
@@ -133,61 +171,45 @@ def guardar_estudiante():
         db.session.add(estudiante)
         db.session.flush()
 
-        for par in parentescos_info:
-            ci_apo = par.get("ci")
-            nombre_par = par.get("nombre")
-            apoderado = Apoderado.query.filter_by(ci=ci_apo).first()
-            if apoderado and nombre_par:
+        for p in parentescos:
+            apo_ci = p.get("ci")
+            tipo = p.get("tipo", "").strip()
+            if not apo_ci or not tipo:
+                continue
+            apoderado = Apoderado.query.filter_by(ci=apo_ci).first()
+            if apoderado:
                 db.session.add(Parentesco(
-                    nombre=nombre_par,
+                    nombre=tipo,
                     apoderado_id=apoderado.id,
                     estudiante_id=estudiante.id
                 ))
 
         db.session.commit()
+
         return jsonify({
-            "message": "Estudiante creado correctamente",
+            "message": "Estudiante y usuario creados correctamente",
             "estudiante": serializar_estudiante(estudiante, new_user)
         }), 201
 
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({"error": "Error de integridad", "detail": str(e)}), 409
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Error al guardar estudiante: {str(e)}"}), 500
+        return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
 
-@estudiante_bp.route('/listar', methods=['GET'])
-def listar_estudiantes():
-    estudiantes = Estudiante.query.all()
-    resultado = []
-    for est in estudiantes:
-        user = User.query.get(est.users_estudiante_id)
-        if user:
-            resultado.append(serializar_estudiante(est, user))
-    return jsonify(resultado)
-
-@estudiante_bp.route('/buscar', methods=['GET'])
-def buscar_estudiante():
-    args = request.args
-    query = Estudiante.query
-    if 'ci' in args: query = query.filter(Estudiante.ci == args.get('ci'))
-    if 'nombre' in args: query = query.filter(Estudiante.nombre.ilike(f"%{args.get('nombre')}%"))
-    if 'apellido' in args: query = query.filter(Estudiante.apellido.ilike(f"%{args.get('apellido')}%"))
-    if 'telefono' in args: query = query.filter(Estudiante.telefono == args.get('telefono'))
-    if 'users_estudiante_id' in args and args.get('users_estudiante_id').isdigit():
-        query = query.filter(Estudiante.users_estudiante_id == int(args.get('users_estudiante_id')))
-
-    results = []
-    for est in query.all():
-        user = User.query.get(est.users_estudiante_id)
-        if user:
-            results.append(serializar_estudiante(est, user))
-    return jsonify(results)
-
-@estudiante_bp.route('/actualizar/<int:estudiante_id>', methods=['PATCH'])
-def actualizar_estudiante(estudiante_id):
+@estudiante_bp.route('/actualizar_user/<int:estudiante_id>', methods=['PATCH'])
+def actualizar_estudiante_user(estudiante_id):
     estudiante = Estudiante.query.get_or_404(estudiante_id)
     user = User.query.get_or_404(estudiante.users_estudiante_id)
+
     try:
         data = request.form.to_dict()
+        parentescos_raw = data.get("parentescos")
+        parentescos = []
+        if parentescos_raw:
+            import json
+            parentescos = json.loads(parentescos_raw)
 
         if 'name' in data:
             name = data['name'].strip()
@@ -202,20 +224,8 @@ def actualizar_estudiante(estudiante_id):
             user.email = email
 
         if 'password' in data and data['password'].strip():
+            from werkzeug.security import generate_password_hash
             user.password = generate_password_hash(data['password'])
-
-        if 'ci' in data and str(data['ci']).isdigit():
-            estudiante.ci = int(data['ci'])
-        if 'nombre' in data:
-            estudiante.nombre = data['nombre'].strip()
-        if 'apellido' in data:
-            estudiante.apellido = data['apellido'].strip()
-        if 'sexo' in data:
-            estudiante.sexo = data['sexo'].strip()
-        if 'telefono' in data and str(data['telefono']).isdigit():
-            estudiante.telefono = int(data['telefono'])
-        if 'users_id' in data and str(data['users_id']).isdigit():
-            estudiante.users_id = int(data['users_id'])
 
         file = request.files.get('photo')
         if file and allowed_file(file.filename):
@@ -225,52 +235,99 @@ def actualizar_estudiante(estudiante_id):
             user.photo_storage = photo_storage
             user.photo_url = photo_url
 
+        if 'ci' in data and data['ci'].isdigit():
+            estudiante.ci = int(data['ci'])
+
+        if 'nombre' in data:
+            estudiante.nombre = data['nombre'].strip()
+
+        if 'apellido' in data:
+            estudiante.apellido = data['apellido'].strip()
+
+        if 'sexo' in data:
+            estudiante.sexo = data['sexo'].strip()
+
+        if 'telefono' in data and data['telefono'].isdigit():
+            estudiante.telefono = int(data['telefono'])
+
+        if 'users_id' in data and data['users_id'].isdigit():
+            estudiante.users_id = int(data['users_id'])
+
+        if parentescos:
+
+            Parentesco.query.filter_by(estudiante_id=estudiante.id).delete()
+            for p in parentescos:
+                apo_ci = p.get("ci")
+                tipo = p.get("tipo", "").strip()
+                if not apo_ci or not tipo:
+                    continue
+                apoderado = Apoderado.query.filter_by(ci=apo_ci).first()
+                if apoderado:
+                    db.session.add(Parentesco(
+                        nombre=tipo,
+                        apoderado_id=apoderado.id,
+                        estudiante_id=estudiante.id
+                    ))
+
         db.session.commit()
+
         return jsonify({
             "message": "Estudiante actualizado correctamente",
             "estudiante": serializar_estudiante(estudiante, user)
         })
 
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({"error": "Error de integridad", "detail": str(e)}), 409
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Error al actualizar: {str(e)}"}), 500
+        return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
 
-@estudiante_bp.route('/eliminar/<int:estudiante_id>', methods=['DELETE'])
-def eliminar_estudiante(estudiante_id):
+@estudiante_bp.route('/desactivar_user/<int:estudiante_id>', methods=['DELETE'])
+def desactivar_user_estudiante(estudiante_id):
     estudiante = Estudiante.query.get_or_404(estudiante_id)
     user = User.query.get_or_404(estudiante.users_estudiante_id)
+
     try:
         user.status = False
         db.session.commit()
         return jsonify({
-            "message": "Estudiante desactivado correctamente",
-            "estudiante": serializar_estudiante(estudiante, user)
+            "message": "Estudiante y usuario desactivados correctamente",
+            "estudiante_id": estudiante.id,
+            "user_id": user.id,
+            "ci": estudiante.ci,
+            "nombre": estudiante.nombre,
+            "apellido": estudiante.apellido,
+            "sexo": estudiante.sexo,
+            "telefono": estudiante.telefono,
+            "status": user.status
         })
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"No se pudo desactivar: {str(e)}"}), 500
 
 @estudiante_bp.route('/eliminar_definitivamente/<int:estudiante_id>', methods=['DELETE'])
-def eliminar_estudiante_definitivamente(estudiante_id):
+def eliminar_user_estudiante_definitivamente(estudiante_id):
+    estudiante = Estudiante.query.get_or_404(estudiante_id)
+    user = User.query.get_or_404(estudiante.users_estudiante_id)
+
     try:
-        estudiante = Estudiante.query.get_or_404(estudiante_id)
-        user = User.query.get_or_404(estudiante.users_estudiante_id)
+        if user.photo_storage and os.path.exists(user.photo_storage):
+            os.remove(user.photo_storage)
 
-        if user.photo_storage:
-            photo_path = os.path.abspath(user.photo_storage)
-            if os.path.exists(photo_path):
-                os.remove(photo_path)
-
-        db.session.query(Parentesco).filter_by(estudiante_id=estudiante.id).delete()
+        Parentesco.query.filter_by(estudiante_id=estudiante.id).delete()
         db.session.delete(estudiante)
         db.session.delete(user)
         db.session.commit()
 
-        return jsonify({"message": "Estudiante eliminado correctamente"})
-
+        return jsonify({
+            "message": "Estudiante y usuario eliminados permanentemente",
+            "estudiante_id": estudiante_id
+        })
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"No se pudo eliminar: {str(e)}"}), 500
+
 
 @estudiante_bp.route('/uploads/<rol>/<filename>', methods=['GET'])
 def servir_foto_por_rol(rol, filename):
@@ -288,3 +345,33 @@ def servir_foto_por_rol(rol, filename):
         return send_from_directory(folder, filename)
     except Exception as e:
         return jsonify({"error": f"Error al servir la imagen: {str(e)}"}), 500
+
+@estudiante_bp.route('/buscar', methods=['GET'])
+def buscar_estudiantes():
+    args = request.args
+    query = Estudiante.query
+
+    if 'ci' in args and args['ci'].isdigit():
+        query = query.filter(Estudiante.ci == int(args['ci']))
+    if 'nombre' in args:
+        query = query.filter(Estudiante.nombre.ilike(f"%{args['nombre']}%"))
+    if 'apellido' in args:
+        query = query.filter(Estudiante.apellido.ilike(f"%{args['apellido']}%"))
+    if 'sexo' in args:
+        query = query.filter(Estudiante.sexo.ilike(f"%{args['sexo']}%"))
+    if 'telefono' in args and args['telefono'].isdigit():
+        query = query.filter(Estudiante.telefono == int(args['telefono']))
+    if 'users_id' in args and args['users_id'].isdigit():
+        query = query.filter(Estudiante.users_id == int(args['users_id']))
+    if 'users_estudiante_id' in args and args['users_estudiante_id'].isdigit():
+        query = query.filter(Estudiante.users_estudiante_id == int(args['users_estudiante_id']))
+
+    estudiantes = query.all()
+    resultado = []
+
+    for est in estudiantes:
+        user = User.query.get(est.users_estudiante_id)
+        if user:
+            resultado.append(serializar_estudiante(est, user))
+
+    return jsonify(resultado)
