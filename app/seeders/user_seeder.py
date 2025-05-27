@@ -27,8 +27,8 @@ def seed_users():
 
         predefined_users = [
             {
-                "name": "Miguel Angel Ballivian Ocampo",
-                "email": "ballivian02@gmail.com",
+                "name": "Antonio Bravo Vieira",
+                "email": "bravo02@gmail.com",
                 "password": "123456789",
                 "status": True,
                 "rol_id": 1
@@ -41,8 +41,8 @@ def seed_users():
                 "rol_id": 1
             },
             {
-                "name": "Miguel Ballivian",
-                "email": "miguel@mail.com",
+                "name": "Briyidt Araceli",
+                "email": "Araceli@mail.com",
                 "password": "123456",
                 "status": True,
                 "rol_id": 3
