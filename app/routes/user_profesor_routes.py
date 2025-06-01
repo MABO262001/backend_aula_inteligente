@@ -14,6 +14,7 @@ from ..models.profesor import Profesor
 from ..models.materia_profesor import MateriaProfesor
 from ..models.materia_profesor_dia_horario import MateriaProfesorDiaHorario
 from ..models.dia_horario import DiaHorario
+from ..models.materia import Materia
 
 
 
@@ -158,10 +159,14 @@ def guardar_profesor():
         db.session.add(profesor)
         db.session.flush()
 
+        materias_resultado = []
+
         for materia_data in materias_info:
             materia_id = materia_data.get("materia_id")
-            dias_horarios = materia_data.get("dias_horarios", [])
-            if not materia_id or not isinstance(dias_horarios, list):
+            horario_id = materia_data.get("horario_id")
+            dias = materia_data.get("dias", [])
+
+            if not materia_id or not horario_id or not dias:
                 continue
 
             materia_profesor = MateriaProfesor(
@@ -171,34 +176,49 @@ def guardar_profesor():
             db.session.add(materia_profesor)
             db.session.flush()
 
-            for dh_id in dias_horarios:
+            dias_horarios_resultado = []
+
+            for dia_nombre in dias:
+                dia = Dia.query.filter_by(nombre=dia_nombre).first()
+                if not dia:
+                    continue
+
+                dia_horario = DiaHorario.query.filter_by(horario_id=horario_id, dia_id=dia.id).first()
+                if not dia_horario:
+                    continue
+
                 db.session.add(MateriaProfesorDiaHorario(
                     materia_profesor_id=materia_profesor.id,
-                    dia_horario_id=dh_id
+                    dia_horario_id=dia_horario.id
                 ))
 
-        db.session.commit()
-
-        materias_resultado = []
-        for mp in profesor.materias_profesor:
-            materia = mp.materia
-            dias_horarios = []
-            for mph in mp.materia_profesor_dia_horario:
-                dh = mph.dia_horario
-                dias_horarios.append({
-                    "dia": dh.dia.nombre,
-                    "hora_inicio": dh.horario.hora_inicio.strftime("%H:%M"),
-                    "hora_final": dh.horario.hora_final.strftime("%H:%M")
+                dias_horarios_resultado.append({
+                    "dias_horarios_id": dia_horario.id,
+                    "dia_id": dia.id,
+                    "dias": dia.nombre,
+                    "horario_id": dia_horario.horario.id,
+                    "hora_inicio": dia_horario.horario.hora_inicio.strftime("%H:%M:%S"),
+                    "hora_final": dia_horario.horario.hora_final.strftime("%H:%M:%S")
                 })
 
+            materia = Materia.query.get(materia_id)
             materias_resultado.append({
                 "materia_id": materia.id,
                 "materia_nombre": materia.nombre,
-                "dias_horarios": dias_horarios
+                "dias_horarios": dias_horarios_resultado
             })
 
+        db.session.commit()
+
         return jsonify({
-            "message": "Profesor, usuario y materias asignadas correctamente",
+            "message": "Profesor registrado exitosamente",
+            "user": {
+                "id": user_profesor.id,
+                "name": user_profesor.name,
+                "email": user_profesor.email,
+                "photo_url": user_profesor.photo_url,
+                "status": user_profesor.status
+            },
             "profesor": {
                 "id": profesor.id,
                 "ci": profesor.ci,
@@ -208,13 +228,6 @@ def guardar_profesor():
                 "direccion": profesor.direccion,
                 "users_id": profesor.users_id,
                 "users_profesor_id": profesor.users_profesor_id
-            },
-            "user": {
-                "id": user_profesor.id,
-                "name": user_profesor.name,
-                "email": user_profesor.email,
-                "photo_url": user_profesor.photo_url,
-                "status": user_profesor.status
             },
             "materias": materias_resultado
         }), 201
@@ -394,29 +407,23 @@ def listar_profesores():
         materias = []
         for mp in profesor.materias_profesor:
             materia = mp.materia
-            bloques = {}
+            dias_horarios = []
 
             for mph in mp.materia_profesor_dia_horario:
-                dh = mph.dia_horario
-                dia = dh.dia.nombre
-                horario = dh.horario
+                dia_horario = mph.dia_horario
+                dia = Dia.query.get(dia_horario.dia_id)
+                horario = Horario.query.get(dia_horario.horario_id)
 
-                clave = (horario.hora_inicio.strftime("%H:%M:%S"), horario.hora_final.strftime("%H:%M:%S"))
-
-                if clave not in bloques:
-                    bloques[clave] = {
-                        "id": dh.horario_id,
-                        "hora_inicio": clave[0],
-                        "hora_final": clave[1],
-                        "dias": []
-                    }
-
-                bloques[clave]["dias"].append(dia)
+                dias_horarios.append({
+                    "dia": dia.nombre,
+                    "hora_inicio": horario.hora_inicio.strftime("%H:%M"),
+                    "hora_final": horario.hora_final.strftime("%H:%M")
+                })
 
             materias.append({
                 "materia_id": materia.id,
                 "materia_nombre": materia.nombre,
-                "dias_horarios": list(bloques.values())
+                "dias_horarios": dias_horarios
             })
 
         resultado.append({
@@ -437,7 +444,7 @@ def listar_profesores():
             "materias": materias
         })
 
-    return jsonify(resultado), 200
+    return jsonify(resultado)
 
 
 @profesor_bp.route('/buscar', methods=['GET'])
