@@ -318,8 +318,10 @@ def actualizar_profesor(profesor_id):
 
             for materia_data in materias_info:
                 materia_id = materia_data.get("materia_id")
-                dias_horarios = materia_data.get("dias_horarios", [])
-                if not materia_id or not isinstance(dias_horarios, list):
+                horario_id = materia_data.get("horario_id")
+                dias = materia_data.get("dias", [])
+
+                if not materia_id or not horario_id or not dias:
                     continue
 
                 materia_profesor = MateriaProfesor(
@@ -329,23 +331,17 @@ def actualizar_profesor(profesor_id):
                 db.session.add(materia_profesor)
                 db.session.flush()
 
-                for dh in dias_horarios:
-                    if isinstance(dh, int):
-                        dia_horario_id = dh
-                    elif isinstance(dh, dict):
-                        dia_nombre = dh.get("dia")
-                        hora_inicio = dh.get("hora_inicio")
-                        hora_final = dh.get("hora_final")
-                        if dia_nombre and hora_inicio and hora_final:
-                            dia_horario_id = get_or_create_dia_horario(dia_nombre, hora_inicio, hora_final)
-                        else:
-                            continue
-                    else:
+                for dia_nombre in dias:
+                    dia = Dia.query.filter_by(nombre=dia_nombre).first()
+                    if not dia:
+                        continue
+                    dia_horario = DiaHorario.query.filter_by(horario_id=horario_id, dia_id=dia.id).first()
+                    if not dia_horario:
                         continue
 
                     db.session.add(MateriaProfesorDiaHorario(
                         materia_profesor_id=materia_profesor.id,
-                        dia_horario_id=dia_horario_id
+                        dia_horario_id=dia_horario.id
                     ))
 
         db.session.commit()
@@ -357,9 +353,12 @@ def actualizar_profesor(profesor_id):
             for mph in mp.materia_profesor_dia_horario:
                 dh = mph.dia_horario
                 dias_horarios.append({
-                    "dia": dh.dia.nombre,
-                    "hora_inicio": dh.horario.hora_inicio.strftime("%H:%M"),
-                    "hora_final": dh.horario.hora_final.strftime("%H:%M")
+                    "dias_horarios_id": dh.id,
+                    "dia_id": dh.dia.id,
+                    "dias": dh.dia.nombre,
+                    "horario_id": dh.horario.id,
+                    "hora_inicio": dh.horario.hora_inicio.strftime("%H:%M:%S"),
+                    "hora_final": dh.horario.hora_final.strftime("%H:%M:%S")
                 })
 
             materias_resultado.append({
