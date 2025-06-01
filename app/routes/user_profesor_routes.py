@@ -402,7 +402,8 @@ def listar_profesores():
                 horario = Horario.query.get(dia_horario.horario_id)
 
                 dias_horarios.append({
-                    "dia": dia.nombre,
+                    "dia_horario_id": dia_horario.id,
+                    "dia_nombre": dia.nombre,
                     "hora_inicio": horario.hora_inicio.strftime("%H:%M"),
                     "hora_final": horario.hora_final.strftime("%H:%M")
                 })
