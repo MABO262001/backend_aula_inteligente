@@ -416,7 +416,7 @@ def listar_profesores():
             materias.append({
                 "materia_id": materia.id,
                 "materia_nombre": materia.nombre,
-                "horario": list(bloques.values())
+                "dias_horarios": list(bloques.values())
             })
 
         resultado.append({
