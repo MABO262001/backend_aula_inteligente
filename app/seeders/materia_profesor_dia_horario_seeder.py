@@ -1,7 +1,9 @@
 import random
+from collections import defaultdict
 from app.models.materia_profesor_dia_horario import MateriaProfesorDiaHorario
 from app.models.materia_profesor import MateriaProfesor
 from app.models.dia_horario import DiaHorario
+from app.models.materia import Materia
 from app.extensions import db
 
 def seed_materia_profesor_dia_horario():
@@ -16,14 +18,21 @@ def seed_materia_profesor_dia_horario():
         print("❌ No hay materia_profesor o dia_horario para asignar.")
         return
 
+    # Agrupar los dia_horarios por intervalo horario (hora_inicio y hora_final)
+    bloques = defaultdict(list)
+    for dh in dia_horarios:
+        clave = (dh.horario.hora_inicio, dh.horario.hora_final)
+        bloques[clave].append(dh)
+
     asignaciones = []
 
     for mp in materia_profesores:
-        cantidad_asignar = random.randint(1, 3)
+        # Elegir un bloque de horario al azar (mismo horario, distintos días)
+        bloque_elegido = random.choice(list(bloques.values()))
+        # Seleccionar entre 2 y 3 días distintos de ese bloque
+        dias_seleccionados = random.sample(bloque_elegido, k=min(len(bloque_elegido), random.randint(2, 3)))
 
-        dias_asignados = random.sample(dia_horarios, k=min(cantidad_asignar, len(dia_horarios)))
-
-        for dia in dias_asignados:
+        for dia in dias_seleccionados:
             asignacion = MateriaProfesorDiaHorario(
                 materia_profesor_id=mp.id,
                 dia_horario_id=dia.id

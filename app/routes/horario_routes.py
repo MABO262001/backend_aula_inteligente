@@ -14,7 +14,7 @@ def listar_horarios():
     for horario in horarios:
 
         dia_horarios = DiaHorario.query.filter_by(horario_id=horario.id).all()
-        dias = [Dia.query.get(dh.dia_id).nombre for dh in dia_horarios]  # Lista de nombres de los días
+        dias = [Dia.query.get(dh.dia_id).nombre for dh in dia_horarios]
 
         result.append({
             "id": horario.id,

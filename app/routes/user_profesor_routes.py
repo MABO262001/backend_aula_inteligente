@@ -394,24 +394,29 @@ def listar_profesores():
         materias = []
         for mp in profesor.materias_profesor:
             materia = mp.materia
-            dias_horarios = []
+            bloques = {}
 
             for mph in mp.materia_profesor_dia_horario:
-                dia_horario = mph.dia_horario
-                dia = Dia.query.get(dia_horario.dia_id)
-                horario = Horario.query.get(dia_horario.horario_id)
+                dh = mph.dia_horario
+                dia = dh.dia.nombre
+                horario = dh.horario
 
-                dias_horarios.append({
-                    "dia_horario_id": dia_horario.id,
-                    "dia_nombre": dia.nombre,
-                    "hora_inicio": horario.hora_inicio.strftime("%H:%M"),
-                    "hora_final": horario.hora_final.strftime("%H:%M")
-                })
+                clave = (horario.hora_inicio.strftime("%H:%M:%S"), horario.hora_final.strftime("%H:%M:%S"))
+
+                if clave not in bloques:
+                    bloques[clave] = {
+                        "id": dh.horario_id,
+                        "hora_inicio": clave[0],
+                        "hora_final": clave[1],
+                        "dias": []
+                    }
+
+                bloques[clave]["dias"].append(dia)
 
             materias.append({
                 "materia_id": materia.id,
                 "materia_nombre": materia.nombre,
-                "dias_horarios": dias_horarios
+                "horario": list(bloques.values())
             })
 
         resultado.append({
@@ -432,7 +437,7 @@ def listar_profesores():
             "materias": materias
         })
 
-    return jsonify(resultado)
+    return jsonify(resultado), 200
 
 
 @profesor_bp.route('/buscar', methods=['GET'])
