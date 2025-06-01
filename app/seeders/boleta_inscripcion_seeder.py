@@ -1,83 +1,89 @@
 import random
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta, time
+from app.extensions import db
 from app.models.boleta_inscripcion import BoletaInscripcion
 from app.models.estudiante import Estudiante
+from app.models.gestion import Gestion
+from app.models.curso import Curso
+from app.models.paralelo import Paralelo
+from app.models.curso_paralelo import CursoParalelo
 from app.models.gestion_curso_paralelo import GestionCursoParalelo
-from app.models.matricula import Matricula
-from app.extensions import db
+from app.models.user import User
+from app.models.rol import Rol
 
-def seed_boleta_inscripcion():
+def seed_boletas_inscripcion():
     if BoletaInscripcion.query.first():
         print("ℹ️ Ya existen boletas de inscripción en la tabla.")
         return
 
-    boletas = []
-
     estudiantes = Estudiante.query.all()
-    gestiones_curso_paralelo = GestionCursoParalelo.query.all()
+    gestiones = sorted(Gestion.query.all(), key=lambda g: int(g.nombre))
+    cursos_primaria = sorted([c for c in Curso.query.all() if "Primaria" in c.nombre], key=lambda c: int(c.nombre.split('°')[0]))
+    cursos_secundaria = sorted([c for c in Curso.query.all() if "Secundaria" in c.nombre], key=lambda c: int(c.nombre.split('°')[0]))
+    paralelos = Paralelo.query.all()
+    rol_admin = Rol.query.filter_by(nombre="Administrador").first()
+    usuarios_admin = User.query.filter_by(rol_id=rol_admin.id).all()
 
-    # Mapeo para saber en qué gestiones está matriculado cada estudiante
-    matriculas = Matricula.query.all()
-    estudiante_matriculas = {}
-    for m in matriculas:
-        estudiante_matriculas.setdefault(m.parentesco.estudiante_id, []).append(m.subgestion.gestion_curso_paralelo.gestion_id if hasattr(m.subgestion, 'gestion_curso_paralelo') else None)
+    if not all([estudiantes, gestiones, cursos_primaria, cursos_secundaria, paralelos, usuarios_admin]):
+        print("❌ Faltan datos esenciales (estudiantes, gestiones, cursos, paralelos, o admin).")
+        return
 
-    # Ordenamos las gestiones por año para la lógica de ascenso
-    gestiones_curso_paralelo.sort(key=lambda gcp: (gcp.gestion.nombre, gcp.curso_paralelo.curso.nombre if hasattr(gcp, 'curso_paralelo') and hasattr(gcp.curso_paralelo, 'curso') else ''))
+    mitad = len(estudiantes) // 2
+    estudiantes_primaria = estudiantes[:mitad]
+    estudiantes_secundaria = estudiantes[mitad:]
 
-    for estudiante in estudiantes:
-        gestiones_del_estudiante = sorted(set(estudiante_matriculas.get(estudiante.id, [])))
-        if not gestiones_del_estudiante:
-            continue  # Estudiante sin matrículas, ignorar
+    boletas = []
+    fecha_base = datetime.now().date()
+    hora_base = time(8, 0)
 
-        # Cantidad de gestiones en las que estuvo matriculado (usamos para saber curso)
-        gestiones_count = len(gestiones_del_estudiante)
+    def generar_boletas(estudiantes, cursos_base):
+        for estudiante in estudiantes:
+            gestion_inicio_idx = random.randint(0, len(gestiones) - 4)
+            gestiones_seleccionadas = gestiones[gestion_inicio_idx:gestion_inicio_idx + random.randint(3, 5)]
+            curso_inicio_idx = 0
 
-        for i, gestion_id in enumerate(gestiones_del_estudiante):
-            # Buscar cursos para esa gestion
-            gestiones_curso = [gcp for gcp in gestiones_curso_paralelo if gcp.gestion_id == gestion_id]
-            if not gestiones_curso:
-                continue
+            for i, gestion in enumerate(gestiones_seleccionadas):
+                curso_actual = cursos_base[min(curso_inicio_idx + i, len(cursos_base) - 1)]
+                paralelo = random.choice(paralelos)
 
-            # Calcular el índice del curso para el estudiante en esta gestión (subiendo cursos)
-            curso_index = i  # la posición de la gestión representa el curso que debería cursar
+                ya_inscrito = db.session.query(BoletaInscripcion).join(GestionCursoParalelo).filter(
+                    BoletaInscripcion.estudiante_id == estudiante.id,
+                    GestionCursoParalelo.gestion_id == gestion.id
+                ).first()
 
-            # Si supera el número de cursos, repetir último curso
-            if curso_index >= len(gestiones_curso):
-                curso_index = len(gestiones_curso) - 1
+                if ya_inscrito:
+                    continue
 
-            gcp_asignado = gestiones_curso[curso_index]
+                curso_paralelo = CursoParalelo.query.filter_by(
+                    curso_id=curso_actual.id,
+                    paralelo_id=paralelo.id
+                ).first()
 
-            # Validar que no se inscriba más de una vez en la misma gestion y curso
-            existe_boleta = BoletaInscripcion.query.filter_by(
-                estudiante_id=estudiante.id,
-                gestion_curso_paralelo_id=gcp_asignado.id
-            ).first()
+                if not curso_paralelo:
+                    continue
 
-            if existe_boleta:
-                continue
+                gestion_cp = GestionCursoParalelo.query.filter_by(
+                    gestion_id=gestion.id,
+                    curso_paralelo_id=curso_paralelo.id
+                ).first()
 
-            # Fecha aleatoria dentro de la gestion (usamos fecha inicio y fin de la gestion)
-            fecha_inicio = gcp_asignado.gestion.fecha_inicio if hasattr(gcp_asignado.gestion, 'fecha_inicio') else datetime.strptime(gcp_asignado.gestion.nombre + '-01-01', '%Y-%m-%d')
-            fecha_final = gcp_asignado.gestion.fecha_final if hasattr(gcp_asignado.gestion, 'fecha_final') else datetime.strptime(gcp_asignado.gestion.nombre + '-12-31', '%Y-%m-%d')
+                if not gestion_cp:
+                    continue
 
-            fecha_random = fecha_inicio + timedelta(days=random.randint(0, (fecha_final - fecha_inicio).days))
+                usuario_admin = random.choice(usuarios_admin)
 
-            # Hora random entre 8am y 5pm
-            hora_random = time(hour=random.randint(8, 17), minute=random.choice([0, 15, 30, 45]))
+                boleta = BoletaInscripcion(
+                    fecha=gestion.nombre + '-02-15',
+                    hora=(datetime.combine(fecha_base, hora_base) + timedelta(minutes=random.randint(0, 200))).time(),
+                    estudiante_id=estudiante.id,
+                    gestion_curso_paralelo_id=gestion_cp.id,
+                    users_id=usuario_admin.id
+                )
+                boletas.append(boleta)
 
-            # El usuario admin que inscribe
-            user_admin = estudiante.users_id
-
-            boleta = BoletaInscripcion(
-                hora=hora_random,
-                fecha=fecha_random,
-                estudiante_id=estudiante.id,
-                gestion_curso_paralelo_id=gcp_asignado.id,
-                users_id=user_admin
-            )
-            boletas.append(boleta)
+    generar_boletas(estudiantes_primaria, cursos_primaria)
+    generar_boletas(estudiantes_secundaria, cursos_secundaria)
 
     db.session.add_all(boletas)
     db.session.commit()
-    print(f"✅ {len(boletas)} boletas de inscripción insertadas.")
+    print(f"✅ Se generaron {len(boletas)} boletas de inscripción distribuidas entre primaria y secundaria.")

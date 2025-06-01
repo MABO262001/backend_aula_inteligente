@@ -71,7 +71,7 @@ def seed_users():
         roles = {
             1: 7,    # Administradores
             2: 5,   # Profesores
-            3: 30, # Estudiantes
+            3: 400, # Estudiantes
             4: 13   # Apoderados
         }
 

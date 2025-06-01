@@ -54,6 +54,7 @@ from .routes.gestion_routes import gestion_bp
 from .routes.user_apoderados import apoderado_bp
 from .routes.user_estudiante_routes import estudiante_bp
 from .routes.pagos_matriculas_routes import pagos_matriculas_bp
+from .routes.inscripcion_routes import boleta_bp
 
 from flask_cors import CORS
 
@@ -81,5 +82,6 @@ def create_app():
     app.register_blueprint(apoderado_bp, url_prefix='/api/apoderados')
     app.register_blueprint(estudiante_bp, url_prefix='/api/estudiante')
     app.register_blueprint(pagos_matriculas_bp, url_prefix='/api/pagos_matriculas')
+    app.register_blueprint(boleta_bp, url_prefix='/api/boleta')
 
     return app

@@ -19,6 +19,8 @@ from app.seeders.materia_profesor import seed_materia_profesor
 from app.seeders.materia_profesor_dia_horario_seeder import seed_materia_profesor_dia_horario
 from app.seeders.materia_horario_curso_paralelo_seeder import seed_materia_horario_curso_paralelo
 
+from app.seeders.boleta_inscripcion_seeder import seed_boletas_inscripcion
+
 
 def run_all_seeders():
     seed_roles()
@@ -41,3 +43,4 @@ def run_all_seeders():
     seed_materia_profesor()
     seed_materia_profesor_dia_horario()
     seed_materia_horario_curso_paralelo()
+    seed_boletas_inscripcion()
