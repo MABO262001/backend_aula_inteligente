@@ -63,23 +63,6 @@ def save_user_photo_by_role(file, user_name, role_name):
 
     return filepath, public_url
 
-# def save_user_photo_by_role(file, user_name, role_name):
-#     upload_folder = current_app.config.get('UPLOAD_FOLDER', 'uploads')
-#     model_folder = os.path.join(upload_folder, role_name.lower())
-#     os.makedirs(model_folder, exist_ok=True)
-#
-#     ext = file.filename.rsplit('.', 1)[1].lower()
-#     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-#     safe_name = secure_filename(f"{user_name}_{timestamp}.{ext}")
-#     filepath = os.path.join(model_folder, safe_name)
-#     file.save(filepath)
-#
-#     # Construir URL completa con BASE_URL de producción
-#     base_url = current_app.config.get('BASE_URL', 'http://localhost:5000')
-#     public_url = f"{base_url}/api/profesores/uploads/{role_name.lower()}/{safe_name}"
-#
-#     return filepath, public_url
-
 @profesor_bp.route('/guardar', methods=['POST'])
 def guardar_profesor():
     try:
@@ -403,36 +386,40 @@ def listar_profesores():
     for profesor in profesores:
         user = User.query.get(profesor.users_profesor_id)
 
-        materias = []
+        materias_resultado = []
         for mp in profesor.materias_profesor:
             materia = mp.materia
-            dias_horarios = []
+
+            # Agrupar días por materia_id y horario_id
+            grupo_clave = (materia.id,)
+            horarios_por_materia = {}
 
             for mph in mp.materia_profesor_dia_horario:
-                dia_horario = mph.dia_horario
-                dia = Dia.query.get(dia_horario.dia_id)
-                horario = Horario.query.get(dia_horario.horario_id)
+                dh = mph.dia_horario
+                key = (materia.id, dh.horario.id)
 
-                dias_horarios.append({
-                    "dia": dia.nombre,
-                    "hora_inicio": horario.hora_inicio.strftime("%H:%M"),
-                    "hora_final": horario.hora_final.strftime("%H:%M")
-                })
+                if key not in horarios_por_materia:
+                    horarios_por_materia[key] = {
+                        "materia_id": materia.id,
+                        "horario_id": dh.horario.id,
+                        "dias": []
+                    }
 
-            materias.append({
-                "materia_id": materia.id,
-                "materia_nombre": materia.nombre,
-                "dias_horarios": dias_horarios
-            })
+                horarios_por_materia[key]["dias"].append(dh.dia.nombre)
+
+            materias_resultado.extend(horarios_por_materia.values())
 
         resultado.append({
-            "id": profesor.id,
-            "ci": profesor.ci,
-            "nombre_profesor": profesor.nombre,
-            "apellido_profesor": profesor.apellido,
-            "telefono": profesor.telefono,
-            "direccion": profesor.direccion,
-            "users_id": profesor.users_id,
+            "profesor": {
+                "id": profesor.id,
+                "ci": profesor.ci,
+                "nombre_profesor": profesor.nombre,
+                "apellido_profesor": profesor.apellido,
+                "telefono": profesor.telefono,
+                "direccion": profesor.direccion,
+                "users_id": profesor.users_id,
+                "users_profesor_id": profesor.users_profesor_id
+            },
             "user": {
                 "id": user.id,
                 "name": user.name,
@@ -440,7 +427,7 @@ def listar_profesores():
                 "photo_url": user.photo_url,
                 "status": user.status
             },
-            "materias": materias
+            "materias": materias_resultado
         })
 
     return jsonify(resultado)
