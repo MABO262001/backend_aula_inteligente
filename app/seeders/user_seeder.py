@@ -27,6 +27,13 @@ def seed_users():
 
         predefined_users = [
             {
+                "name": "MABO262001",
+                "email": "ballivian02@gmail.com",
+                "password": "123456789",
+                "status": True,
+                "rol_id": 1
+            },
+            {
                 "name": "Antonio Bravo Vieira",
                 "email": "bravo02@gmail.com",
                 "password": "123456789",
