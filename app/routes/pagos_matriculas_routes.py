@@ -225,3 +225,4 @@ def listar_subgestiones():
         return jsonify(resultado), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+

@@ -90,3 +90,15 @@ def protected():
         "message": f"Bienvenido usuario {user_id_int}",
         "user": get_user_data(user)
     })
+
+
+@auth_bp.route('/auth/me', methods=['GET'])
+@jwt_required()
+def get_current_user():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+
+    return jsonify(user.to_dict()), 200

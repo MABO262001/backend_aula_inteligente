@@ -610,3 +610,39 @@ def detalle_gestion_completo():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@gestion_bp.route('/listar_cursos_por_gestion', methods=['GET'])
+def listar_cursos_por_gestion():
+    try:
+        gestiones = Gestion.query.options(
+            joinedload(Gestion.gestion_curso_paralelos)
+            .joinedload(GestionCursoParalelo.curso_paralelo)
+            .joinedload(CursoParalelo.curso),
+            joinedload(Gestion.gestion_curso_paralelos)
+            .joinedload(GestionCursoParalelo.curso_paralelo)
+            .joinedload(CursoParalelo.paralelo)
+        ).all()
+
+        resultado = []
+        for g in gestiones:
+            gestion_dict = {
+                "id": g.id,
+                "nombre": g.nombre,
+                "cursos_paralelos": []
+            }
+
+            for gcp in g.gestion_curso_paralelos:
+                cp = gcp.curso_paralelo
+                gestion_dict["cursos_paralelos"].append({
+                    "curso_paralelo_id": cp.id,
+                    "curso": cp.curso.nombre,
+                    "paralelo": cp.paralelo.nombre
+                })
+
+            resultado.append(gestion_dict)
+
+        return jsonify(resultado), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
