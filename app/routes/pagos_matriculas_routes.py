@@ -204,3 +204,24 @@ def buscar_matricula_estudiante(ci_estudiante):
         })
 
     return jsonify(resultado)
+
+@pagos_matriculas_bp.route('/listar-subgestiones', methods=['GET'])
+def listar_subgestiones():
+    try:
+        subgestiones = Subgestion.query.all()
+        resultado = []
+
+        for sub in subgestiones:
+            gestion = Gestion.query.get(sub.gestion_id)  # Consulta manual
+            resultado.append({
+                "gestion_nombre": gestion.nombre if gestion else None,
+                "gestion_id": sub.gestion_id,
+                "fecha_inicio": sub.fecha_inicio.strftime("%Y-%m-%d"),
+                "fecha_final": sub.fecha_final.strftime("%Y-%m-%d"),
+                "nombre": sub.nombre,
+                "subgestion_id": sub.id
+            })
+
+        return jsonify(resultado), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

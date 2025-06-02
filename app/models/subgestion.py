@@ -9,3 +9,4 @@ class Subgestion(db.Model):
     fecha_final = db.Column(db.Date, nullable=False)
 
     gestion_id = db.Column(db.Integer, db.ForeignKey("gestion.id"), nullable=False)
+

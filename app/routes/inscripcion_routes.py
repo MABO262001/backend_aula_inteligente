@@ -8,6 +8,7 @@ from ..models.curso import Curso
 from ..models.paralelo import Paralelo
 from ..models.gestion import Gestion
 from ..models.curso_paralelo import CursoParalelo
+from ..models.subgestion import Subgestion
 from datetime import datetime
 from app.models.materia_horario_curso_paralelo import MateriaHorarioCursoParalelo
 
@@ -319,3 +320,76 @@ def buscar_boleta(ci):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@boleta_bp.route('/listar_boleta_cursos_paralelos', methods=['GET'])
+def listar_boleta_cursos_paralelos():
+    boletas = BoletaInscripcion.query.all()
+    resultado = []
+
+    for b in boletas:
+        gcp = b.gestion_curso_paralelo
+        cp = gcp.curso_paralelo
+        paralelo = cp.paralelo
+        curso = cp.curso
+        gestion = gcp.gestion
+
+        resultado.append({
+            "boleta_id": b.id,
+            "hora": b.hora.strftime('%H:%M'),
+            "fecha": b.fecha.strftime('%Y-%m-%d'),
+            "gestion_curso_paralelo": {
+                "gestion_curso_paralelo_id": gcp.id,
+                "gestion": {
+                    "gestion_id": gestion.id,
+                    "gestion_nombre": gestion.nombre
+                },
+                "curso_paralelo": {
+                    "curso_paralelo_id": cp.id,
+                    "paralelo": {
+                        "paralelo_id": paralelo.id,
+                        "paralelo_nombre": paralelo.nombre
+                    },
+                    "curso": {
+                        "curso_id": curso.id,
+                        "curso_nombre": curso.nombre
+                    }
+                }
+            }
+        })
+
+    return jsonify(resultado), 200
+
+@boleta_bp.route('/listar_gestion_paralelo', methods=['GET'])
+def listar_gestion_paralelo():
+    # Obtenemos todos los registros de GestionCursoParalelo
+    registros = GestionCursoParalelo.query.all()
+    resultado = []
+
+    for gcp in registros:
+        curso_paralelo = gcp.curso_paralelo
+        curso = curso_paralelo.curso
+        paralelo = curso_paralelo.paralelo
+        gestion = gcp.gestion
+
+        resultado.append({
+            "gestion_curso_paralelo_id": gcp.id,
+            "curso_paralelo": {
+                "curso_paralelo_id": curso_paralelo.id,
+                "curso": {
+                    "curso_id": curso.id,
+                    "curso_nombre": curso.nombre
+                },
+                "paralelo": {
+                    "paralelo_id": paralelo.id,
+                    "paralelo_nombre": paralelo.nombre
+                }
+            },
+            "gestion": {
+                "gestion_id": gestion.id,
+                "gestion_nombre": gestion.nombre
+            }
+        })
+
+    return jsonify(resultado), 200
+
+

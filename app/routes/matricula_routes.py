@@ -69,3 +69,5 @@ def eliminar(id):
     db.session.delete(registro)
     db.session.commit()
     return jsonify({"message": "Registro eliminado exitosamente"}), 200
+
+

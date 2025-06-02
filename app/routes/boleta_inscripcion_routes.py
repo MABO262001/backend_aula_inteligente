@@ -69,3 +69,42 @@ def eliminar(id):
     db.session.delete(boleta)
     db.session.commit()
     return jsonify({"message": "Registro eliminado exitosamente"}), 200
+
+
+@boleta_inscripcion_bp.route('/listar_boleta_cursos_paralelos', methods=['GET'])
+def listar_boleta_cursos_paralelos():
+    boletas = BoletaInscripcion.query.all()
+    resultado = []
+
+    for b in boletas:
+        gcp = b.gestion_curso_paralelo
+        cp = gcp.curso_paralelo
+        paralelo = cp.paralelo
+        curso = cp.curso
+        gestion = gcp.gestion
+
+        resultado.append({
+            "boleta_id": b.id,
+            "hora": b.hora.strftime('%H:%M'),
+            "fecha": b.fecha.strftime('%Y-%m-%d'),
+            "gestion_curso_paralelo": {
+                "gestion_curso_paralelo_id": gcp.id,
+                "gestion": {
+                    "gestion_id": gestion.id,
+                    "gestion_nombre": gestion.nombre
+                },
+                "curso_paralelo": {
+                    "curso_paralelo_id": cp.id,
+                    "paralelo": {
+                        "paralelo_id": paralelo.id,
+                        "paralelo_nombre": paralelo.nombre
+                    },
+                    "curso": {
+                        "curso_id": curso.id,
+                        "curso_nombre": curso.nombre
+                    }
+                }
+            }
+        })
+
+    return jsonify(resultado), 200
