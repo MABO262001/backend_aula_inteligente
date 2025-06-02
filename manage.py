@@ -71,3 +71,7 @@ def reset_db():
     print("🌱 Ejecutando seeders...")
     run_all_seeders()
     print("✅ Seeders ejecutados correctamente.")
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
