@@ -6,19 +6,16 @@ from ..models.user import User
 from ..models.rol import Rol
 from ..models.gestion import Gestion
 from ..models.gestion_curso_paralelo import GestionCursoParalelo
-from ..models.curso_paralelo import CursoParalelo
-from ..models.curso import Curso
-from ..models.paralelo import Paralelo
-from ..models.materia_profesor import MateriaProfesor
-from ..models.materia_profesor_dia_horario import MateriaProfesorDiaHorario
-from ..models.materia import Materia
 from ..models.profesor import Profesor
 from ..models.dia_horario import DiaHorario
-from ..models.dia import Dia
-from ..models.horario import Horario
 from ..models.materia_horario_curso_paralelo import MateriaHorarioCursoParalelo
 from ..models.boleta_inscripcion import BoletaInscripcion
 from ..models.estudiante import Estudiante
+from ..models.asistencia import Asistencia
+from ..models.estudiante_asistencia import EstudianteAsistencia
+from ..models.participacion import Participacion
+from ..models.estudiante_participa import EstudianteParticipa
+from ..models.nota import Nota
 
 apimovil_pb = Blueprint("apimovil_pb", __name__)
 
@@ -240,3 +237,142 @@ def listar_profesor_estructura():
         return jsonify({"error": str(e)}), 500
 
 
+@apimovil_pb.route("/listar_estudiante_estructura", methods=["GET"])
+def listar_estudiante_estructura():
+    try:
+        estudiantes_data = []
+
+        estudiantes_users = User.query.join(Rol).filter(Rol.nombre == "Estudiante").all()
+
+        for user in estudiantes_users:
+            estudiante = Estudiante.query.filter_by(users_estudiante_id=user.id).first()
+            if not estudiante:
+                continue
+
+            gestiones_json = []
+            boletas = BoletaInscripcion.query.filter_by(estudiante_id=estudiante.id).all()
+
+            for boleta in boletas:
+                gcp = boleta.gestion_curso_paralelo
+                gestion = gcp.gestion
+                cp = gcp.curso_paralelo
+                curso = cp.curso
+                paralelo = cp.paralelo
+
+                # Asistencias del estudiante
+                asistencias = Asistencia.query.filter_by(gestion_curso_paralelo_id=gcp.id).all()
+                asistencia_json = []
+                for a in asistencias:
+                    ea = EstudianteAsistencia.query.filter_by(estudiante_id=estudiante.id, asistencia_id=a.id).first()
+                    if ea:
+                        asistencia_json.append({
+                            "asistencia_id": a.id,
+                            "asistencia_hora": a.hora.strftime('%H:%M'),
+                            "asistencia_fecha": a.fecha.strftime('%Y-%m-%d'),
+                            "estudiante_asistencia": {
+                                "estudiante_asistencia_id": ea.id,
+                                "estudiante_asistencia_estado": ea.estado
+                            }
+                        })
+
+                # Materias
+                materias_json = []
+                mhcps = MateriaHorarioCursoParalelo.query.filter_by(gestion_curso_paralelo_id=gcp.id).all()
+                for mhcp in mhcps:
+                    mpdh = mhcp.materia_profesor_dia_horario
+                    mp = mpdh.materia_profesor
+                    materia = mp.materia
+                    profesor = mp.profesor
+                    dh = mpdh.dia_horario
+                    horario = dh.horario
+
+                    dias = DiaHorario.query.filter_by(horario_id=horario.id).all()
+                    dias_nombres = list(set([d.dia.nombre for d in dias]))
+
+                    # Participaciones
+                    participaciones = Participacion.query.filter_by(gestion_curso_paralelo_id=gcp.id, materia_profesor_id=mp.id).all()
+                    participacion_json = []
+                    for p in participaciones:
+                        ep = EstudianteParticipa.query.filter_by(estudiante_id=estudiante.id, participacion_id=p.id).first()
+                        if ep:
+                            participacion_json.append({
+                                "participacion_id": p.id,
+                                "participacion_descripcion": p.descripcion,
+                                "participacion_hora": p.hora.strftime('%H:%M'),
+                                "participacion_fecha": p.fecha.strftime('%Y-%m-%d'),
+                                "estudiante_participa": {
+                                    "estudiante_participa_id": ep.id,
+                                    "estudiante_participa_estado": ep.estado
+                                }
+                            })
+
+                    # Nota
+                    nota = Nota.query.filter_by(estudiante_id=estudiante.id, gestion_curso_paralelo_id=gcp.id, materia_profesor_id=mp.id).first()
+
+                    materias_json.append({
+                        "materia_id": materia.id,
+                        "materia_nombre": materia.nombre,
+                        "participacion": participacion_json,
+                        "nota": {
+                            "nota_id": nota.id if nota else None,
+                            "nota_promedio_final": nota.promedio_final if nota else None
+                        },
+                        "horario": {
+                            "horario_id": horario.id,
+                            "horario_inicio": horario.hora_inicio.strftime('%H:%M'),
+                            "horario_final": horario.hora_final.strftime('%H:%M'),
+                            "dias": dias_nombres
+                        },
+                        "profesor": {
+                            "profesor_id": profesor.id,
+                            "profesor_ci": profesor.ci,
+                            "profesor_nombre": profesor.nombre,
+                            "profesor_apellido": profesor.apellido,
+                            "profesor_telefono": profesor.telefono,
+                            "profesor_direccion": profesor.direccion
+                        }
+                    })
+
+                gestiones_json.append({
+                    "gestion_id": gestion.id,
+                    "gestion_nombre": gestion.nombre,
+                    "gestion_curso_paralelo": {
+                        "gestion_curso_paralelo_id": gcp.id,
+                        "cursos_paralelo": {
+                            "curso_paralelo_id": cp.id,
+                            "curso_id": curso.id,
+                            "curso_nombre": curso.nombre,
+                            "paralelo_id": paralelo.id,
+                            "paralelo_nombre": paralelo.nombre,
+                            "asistencia": asistencia_json,
+                            "materia": materias_json
+                        }
+                    }
+                })
+
+            estudiantes_data.append({
+                "rol_id": user.rol.id,
+                "rol_nombre": user.rol.nombre,
+                "users_id": user.id,
+                "users_name": user.name,
+                "users_email": user.email,
+                "password": "Encriptado",
+                "photo_url": user.photo_url,
+                "photo_storage": user.photo_storage,
+                "status": str(user.status),
+                "estudiante": {
+                    "users_estudiante_id": estudiante.users_estudiante_id,
+                    "estudiante_id": estudiante.id,
+                    "estudiante_ci": estudiante.ci,
+                    "estudiante_nombre": estudiante.nombre,
+                    "estudiante_apellido": estudiante.apellido,
+                    "estudiante_telefono": estudiante.telefono,
+                    "users_id": estudiante.users_id
+                },
+                "gestion": gestiones_json
+            })
+
+        return jsonify(estudiantes_data), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
