@@ -45,6 +45,7 @@ def listar_boletas_por_gestion():
                 }
 
             gestiones_dict[gestion.id]["boletas"].append({
+                "gestion_curso_paralelo_id": boleta.gestion_curso_paralelo_id,
                 "curso_paralelo": {
                     "curso": curso.nombre,
                     "paralelo": paralelo.nombre
@@ -69,7 +70,6 @@ def listar_boletas_por_gestion():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 
 @boleta_bp.route('/registrar-boleta', methods=['POST'])

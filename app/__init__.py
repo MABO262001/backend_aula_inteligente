@@ -3,7 +3,6 @@ from flask import Flask
 from .config import Config
 from .extensions import db, migrate, jwt
 
-
 # ⚠️ Importar los modelos explícitamente para que se registren en SQLAlchemy
 # 1 No depende De Nadie
 from .models.rol import  Rol
