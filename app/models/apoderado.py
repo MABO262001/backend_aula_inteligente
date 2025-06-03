@@ -12,3 +12,5 @@ class Apoderado(db.Model):
 
     users_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     users_apoderado_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+
+    user_apoderado = db.relationship('User', foreign_keys=[users_apoderado_id])

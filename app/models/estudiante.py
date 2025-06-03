@@ -12,3 +12,5 @@ class Estudiante(db.Model):
 
     users_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     users_estudiante_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+
+    user_estudiante = db.relationship('User', foreign_keys=[users_estudiante_id])

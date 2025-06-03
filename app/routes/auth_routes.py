@@ -28,12 +28,12 @@ def get_user_data(user: User) -> dict:
         }
 
     rol_nombre = rol.nombre
-
     base_data = {
         "id": user.id,
         "name": user.name,
         "email": user.email,
         "photo_url": user.photo_url,
+        "photo_storage": user.photo_storage,
         "status": user.status,
         "rol": {
             "id": rol.id,
@@ -45,7 +45,7 @@ def get_user_data(user: User) -> dict:
         return base_data
 
     elif rol_nombre == "Profesor":
-        profesor = user.profesor  # asumiendo relación: user.profesor
+        profesor = getattr(user, "profesor", None)
         if profesor:
             base_data["profesor"] = {
                 "id": profesor.id,
@@ -56,7 +56,7 @@ def get_user_data(user: User) -> dict:
             }
 
     elif rol_nombre == "Estudiante":
-        estudiante = user.estudiante  # asumiendo relación: user.estudiante
+        estudiante = getattr(user, "estudiante", None)
         if estudiante:
             base_data["estudiante"] = {
                 "id": estudiante.id,
@@ -68,7 +68,7 @@ def get_user_data(user: User) -> dict:
             }
 
     elif rol_nombre == "Apoderado":
-        apoderado = user.apoderado  # asumiendo relación: user.apoderado
+        apoderado = getattr(user, "apoderado", None)
         if apoderado:
             base_data["apoderado"] = {
                 "id": apoderado.id,
@@ -106,7 +106,6 @@ def login():
     if not user.status:
         return jsonify({"error": "Usuario inactivo, contacte al administrador"}), 403
 
-    # Convertimos el ID a string para evitar error en JWT
     access_token = create_access_token(identity=str(user.id))
 
     return jsonify({
@@ -124,8 +123,7 @@ def logout():
 @auth_bp.route('/protegido', methods=['GET'])
 @jwt_required()
 def protected():
-    user_id = get_jwt_identity()  # Será string
-    # Convertimos a entero para consulta en DB
+    user_id = get_jwt_identity()
     try:
         user_id_int = int(user_id)
     except (TypeError, ValueError):
@@ -142,7 +140,6 @@ def protected():
         "user": get_user_data(user)
     })
 
-
 @auth_bp.route('/auth/me', methods=['GET'])
 @jwt_required()
 def get_current_user():
@@ -152,4 +149,4 @@ def get_current_user():
     if not user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    return jsonify(user.to_dict()), 200
+    return jsonify(get_user_data(user)), 200
