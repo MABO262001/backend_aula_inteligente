@@ -14,7 +14,7 @@ def guardar_participacion():
     try:
         data = request.get_json()
 
-        required = ['descripcion', 'hora', 'fecha', 'gestion_curso_paralelo_id', 'profesor_id', 'estudiantes']
+        required = ['descripcion', 'hora', 'fecha', 'gestion_curso_paralelo_id', 'profesor_id', 'materia_profesor_id', 'estudiantes']
         missing = [f for f in required if f not in data]
         if missing:
             return jsonify({"error": f"Faltan campos: {', '.join(missing)}"}), 400
@@ -24,7 +24,8 @@ def guardar_participacion():
             hora=datetime.strptime(data['hora'], '%H:%M').time(),
             fecha=datetime.strptime(data['fecha'], '%Y-%m-%d').date(),
             gestion_curso_paralelo_id=data['gestion_curso_paralelo_id'],
-            profesor_id=data['profesor_id']
+            profesor_id=data['profesor_id'],
+            materia_profesor_id=data['materia_profesor_id']
         )
 
         db.session.add(participacion)
@@ -67,6 +68,7 @@ def guardar_participacion():
                 "paralelo_nombre": paralelo.nombre,
                 "profesor_id": participacion.profesor_id,
                 "profesor_nombre": participacion.profesor.nombre,
+                "materia_profesor_id": participacion.materia_profesor_id,
                 "estudiantes": estudiantes_response
             }
         }), 201
@@ -81,7 +83,7 @@ def actualizar_participacion(participacion_id):
     try:
         data = request.get_json()
 
-        required = ['descripcion', 'hora', 'fecha', 'gestion_curso_paralelo_id', 'profesor_id', 'estudiantes']
+        required = ['descripcion', 'hora', 'fecha', 'gestion_curso_paralelo_id', 'profesor_id', 'materia_profesor_id', 'estudiantes']
         missing = [f for f in required if f not in data]
         if missing:
             return jsonify({"error": f"Faltan campos: {', '.join(missing)}"}), 400
@@ -97,6 +99,7 @@ def actualizar_participacion(participacion_id):
         participacion.fecha = datetime.strptime(data['fecha'], '%Y-%m-%d').date()
         participacion.gestion_curso_paralelo_id = data['gestion_curso_paralelo_id']
         participacion.profesor_id = data['profesor_id']
+        participacion.materia_profesor_id = data['materia_profesor_id']
 
         db.session.flush()
 
@@ -137,6 +140,7 @@ def actualizar_participacion(participacion_id):
                 "paralelo_nombre": paralelo.nombre,
                 "profesor_id": participacion.profesor_id,
                 "profesor_nombre": participacion.profesor.nombre,
+                "materia_profesor_id": participacion.materia_profesor_id,
                 "estudiantes": estudiantes_response
             }
         }), 200
@@ -181,6 +185,7 @@ def listar_participaciones():
                 "paralelo_nombre": paralelo.nombre,
                 "profesor_id": participacion.profesor_id,
                 "profesor_nombre": participacion.profesor.nombre,
+                "materia_profesor_id": participacion.materia_profesor_id,
                 "estudiantes": estudiantes_response
             })
 

@@ -239,3 +239,4 @@ def listar_profesor_estructura():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
