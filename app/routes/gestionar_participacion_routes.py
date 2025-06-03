@@ -60,11 +60,14 @@ def guardar_participacion():
         return jsonify({
             "mensaje": "Participación registrada correctamente",
             "participacion": {
+                "participacion_id": participacion.id,
                 "descripcion": participacion.descripcion,
                 "hora": participacion.hora.strftime('%H:%M'),
                 "fecha": participacion.fecha.strftime('%Y-%m-%d'),
                 "gestion_curso_paralelo_id": gcp.id,
+                "curso_id": curso.id,
                 "curso_nombre": curso.nombre,
+                "paralelo_id": paralelo.id,
                 "paralelo_nombre": paralelo.nombre,
                 "profesor_id": participacion.profesor_id,
                 "profesor_nombre": participacion.profesor.nombre,
@@ -132,11 +135,14 @@ def actualizar_participacion(participacion_id):
         return jsonify({
             "mensaje": "Participación actualizada correctamente",
             "participacion": {
+                "participacion_id": participacion.id,
                 "descripcion": participacion.descripcion,
                 "hora": participacion.hora.strftime('%H:%M'),
                 "fecha": participacion.fecha.strftime('%Y-%m-%d'),
                 "gestion_curso_paralelo_id": gcp.id,
+                "curso_id": curso.id,
                 "curso_nombre": curso.nombre,
+                "paralelo_id": paralelo.id,
                 "paralelo_nombre": paralelo.nombre,
                 "profesor_id": participacion.profesor_id,
                 "profesor_nombre": participacion.profesor.nombre,
