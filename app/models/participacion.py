@@ -11,4 +11,4 @@ class Participacion(db.Model):
     gestion_curso_paralelo_id = db.Column(db.Integer, db.ForeignKey("gestion_curso_paralelo.id"), nullable=False)
     profesor_id = db.Column(db.Integer, db.ForeignKey("profesor.id"), nullable=False)
 
-    profesor = db.relationship("Profesor", backref="participaciones", lazy="joined")  # 👈 esta línea es clave
+    profesor = db.relationship("Profesor", backref="participaciones", lazy="joined")

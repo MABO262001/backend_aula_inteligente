@@ -57,6 +57,8 @@ from .routes.inscripcion_routes import boleta_bp
 from .routes.gestion_notas_routes import gestion_notas_bp
 from .routes.gestionar_asistencias_routes import gestionar_asistencias_bp
 from .routes.gestionar_participacion_routes import gestionar_participaciones_bp
+from .routes.gestionar_apis_movil_routes import apimovil_pb
+
 
 from flask_cors import CORS
 
@@ -88,5 +90,6 @@ def create_app():
     app.register_blueprint(gestion_notas_bp, url_prefix='/api/gestion_notas')
     app.register_blueprint(gestionar_asistencias_bp, url_prefix='/api/asistencias')
     app.register_blueprint(gestionar_participaciones_bp, url_prefix='/api/participacion')
+    app.register_blueprint(apimovil_pb, url_prefix='/api/movil')
 
     return app

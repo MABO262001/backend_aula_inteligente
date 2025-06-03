@@ -12,3 +12,4 @@ class User(db.Model):
     status = db.Column(db.Boolean, default=True)
 
     rol_id = db.Column(db.Integer, db.ForeignKey("rol.id"), nullable=False)
+    rol = db.relationship("Rol", backref="users", lazy="joined")
