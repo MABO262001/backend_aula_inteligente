@@ -9,3 +9,9 @@ class GestionCursoParalelo(db.Model):
 
     curso_paralelo = db.relationship("CursoParalelo", backref="gestion_curso_paralelo_rel", lazy="joined")
     gestion = db.relationship("Gestion", backref="gestion_curso_paralelo_rel", lazy="joined")
+
+    materias_horario = db.relationship(
+        "MateriaHorarioCursoParalelo",
+        backref="gestion_curso_paralelo_rel",
+        lazy="joined"
+    )

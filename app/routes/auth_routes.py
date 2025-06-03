@@ -17,17 +17,68 @@ def validate_email_simple(email: str) -> bool:
 
 def get_user_data(user: User) -> dict:
     rol = Rol.query.get(user.rol_id)
-    return {
+    if not rol:
+        return {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "photo_url": user.photo_url,
+            "status": user.status,
+            "rol": None
+        }
+
+    rol_nombre = rol.nombre
+
+    base_data = {
         "id": user.id,
         "name": user.name,
         "email": user.email,
         "photo_url": user.photo_url,
         "status": user.status,
         "rol": {
-            "id": rol.id if rol else None,
-            "nombre": rol.nombre if rol else None
+            "id": rol.id,
+            "nombre": rol_nombre
         }
     }
+
+    if rol_nombre == "Administrador":
+        return base_data
+
+    elif rol_nombre == "Profesor":
+        profesor = user.profesor  # asumiendo relación: user.profesor
+        if profesor:
+            base_data["profesor"] = {
+                "id": profesor.id,
+                "ci": profesor.ci,
+                "nombre": profesor.nombre,
+                "apellido": profesor.apellido,
+                "telefono": profesor.telefono
+            }
+
+    elif rol_nombre == "Estudiante":
+        estudiante = user.estudiante  # asumiendo relación: user.estudiante
+        if estudiante:
+            base_data["estudiante"] = {
+                "id": estudiante.id,
+                "ci": estudiante.ci,
+                "nombre": estudiante.nombre,
+                "apellido": estudiante.apellido,
+                "sexo": estudiante.sexo,
+                "telefono": estudiante.telefono
+            }
+
+    elif rol_nombre == "Apoderado":
+        apoderado = user.apoderado  # asumiendo relación: user.apoderado
+        if apoderado:
+            base_data["apoderado"] = {
+                "id": apoderado.id,
+                "ci": apoderado.ci,
+                "nombre": apoderado.nombre,
+                "apellido": apoderado.apellido,
+                "telefono": apoderado.telefono
+            }
+
+    return base_data
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
