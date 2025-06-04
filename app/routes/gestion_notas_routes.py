@@ -295,3 +295,41 @@ def eliminar_nota(nota_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+@gestion_notas_bp.route('/lista/g_c_p/<int:gestion_curso_paralelo_id>/m_p/<int:materia_profesor_id>', methods=['GET'])
+def obtener_lista_estudiantes_con_nota(gestion_curso_paralelo_id, materia_profesor_id):
+    try:
+        # Obtener boletas con los estudiantes precargados
+        boletas = BoletaInscripcion.query.options(
+            joinedload(BoletaInscripcion.estudiante)
+        ).filter_by(gestion_curso_paralelo_id=gestion_curso_paralelo_id).all()
+
+        estudiantes_json = []
+        for boleta in boletas:
+            est = boleta.estudiante
+            nota = Nota.query.filter_by(
+                estudiante_id=est.id,
+                gestion_curso_paralelo_id=gestion_curso_paralelo_id,
+                materia_profesor_id=materia_profesor_id
+            ).first()
+
+            estudiantes_json.append({
+                "estudiante_id": est.id,
+                "estudiante_ci": est.ci,
+                "estudiante_nombre": est.nombre,
+                "estudiante_apellido": est.apellido,
+                "estudiante_sexo": est.sexo,
+                "estudiante_telefono": est.telefono,
+                "promedio_final": nota.promedio_final if nota else None
+            })
+
+        return jsonify({
+            "gestion_curso_paralelo_id": gestion_curso_paralelo_id,
+            "materia_profesor_id": materia_profesor_id,
+            "estudiantes": estudiantes_json
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
