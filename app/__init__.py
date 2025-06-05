@@ -67,7 +67,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
+    CORS(app, origins=["http://44.202.10.107:5173"], supports_credentials=True)
 
     print("[DEBUG] UPLOAD_FOLDER:", app.config['UPLOAD_FOLDER'])
 
