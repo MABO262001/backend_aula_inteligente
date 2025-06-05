@@ -22,7 +22,9 @@ def seed_users():
         existing_emails = set()
         user_counter = 1
 
-        with open('fakerApi.json', 'r', encoding='utf-8') as file:
+        # with open('fakerApi.json', 'r', encoding='utf-8') as file:
+        with open('/app/fakerApi.json', 'r', encoding='utf-8') as file:
+
             names_data = json.load(file)
 
         predefined_users = [
